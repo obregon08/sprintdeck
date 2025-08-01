@@ -14,7 +14,7 @@ export function useSession(): Session | null {
       setSession(session as Session)
     }
     getData()
-  }, [])
+  }, [supabase.auth])
 
   return {
     user: {

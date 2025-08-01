@@ -1,43 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth-server'
-
-interface HealthCheckResult {
-  status: 'healthy' | 'unhealthy' | 'degraded'
-  timestamp: string
-  uptime: number
-  environment: string
-  version: string
-  database: {
-    connected: boolean
-    tables: {
-      projects: boolean
-      tasks: boolean
-    }
-    performance: {
-      queryTime: number
-      connectionPool: {
-        active: number
-        idle: number
-      }
-    }
-    projectCount?: number
-    taskCount?: number
-  }
-  system: {
-    memory: {
-      used: number
-      total: number
-      percentage: number
-    }
-    nodeVersion: string
-  }
-  auth: {
-    user?: any
-    sessionActive: boolean
-  }
-  errors?: string[]
-}
+import type { HealthCheckResult } from '@/types'
 
 export async function GET() {
   const startTime = Date.now()
@@ -179,7 +143,7 @@ export async function GET() {
     // Always disconnect to clean up connections
     try {
       await db.$disconnect()
-    } catch (error) {
+    } catch {
       // Ignore disconnect errors
     }
   }
