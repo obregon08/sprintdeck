@@ -30,7 +30,7 @@ describe('useProjects', () => {
     })
   })
 
-  it('should fetch projects successfully', async () => {
+  it('fetches projects successfully', async () => {
     const mockProjects = [
       {
         id: '1',
@@ -60,7 +60,7 @@ describe('useProjects', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('should handle error when fetch fails', async () => {
+  it('handles error when fetch fails', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
     })

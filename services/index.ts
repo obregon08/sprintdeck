@@ -1,1 +1,2 @@
-export { projectServices } from "./projects"; 
+export { projectServices } from "./projects";
+export { taskServices } from "./tasks"; 

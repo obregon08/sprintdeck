@@ -9,7 +9,7 @@ describe('projectServices', () => {
   })
 
   describe('fetchProjects', () => {
-    it('should fetch projects successfully', async () => {
+    it('fetches projects successfully', async () => {
       const mockProjects = [
         {
           id: '1',
@@ -35,7 +35,7 @@ describe('projectServices', () => {
       expect(result).toEqual(mockProjects)
     })
 
-    it('should throw error when fetch fails', async () => {
+    it('throws error when fetch fails', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
       })
@@ -47,7 +47,7 @@ describe('projectServices', () => {
   })
 
   describe('createProject', () => {
-    it('should create project successfully', async () => {
+    it('creates project successfully', async () => {
       const projectData: ProjectFormData = {
         name: 'New Project',
         description: 'A new project',
@@ -81,7 +81,7 @@ describe('projectServices', () => {
       expect(result).toEqual(mockResponse)
     })
 
-    it('should throw error when creation fails', async () => {
+    it('throws error when creation fails', async () => {
       const projectData: ProjectFormData = {
         name: 'New Project',
         description: 'A new project',
@@ -99,7 +99,7 @@ describe('projectServices', () => {
   })
 
   describe('updateProject', () => {
-    it('should update project successfully', async () => {
+    it('updates project successfully', async () => {
       const projectData: ProjectFormData = {
         name: 'Updated Project',
         description: 'Updated description',
@@ -138,7 +138,7 @@ describe('projectServices', () => {
   })
 
   describe('deleteProject', () => {
-    it('should delete project successfully', async () => {
+    it('deletes project successfully', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ message: 'Project deleted successfully' }),

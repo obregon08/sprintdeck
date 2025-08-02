@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ProjectForm } from '../project-form'
@@ -24,13 +24,14 @@ const createWrapper = () => {
       },
     },
   })
-  return ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   )
+  return Wrapper
 }
 
 describe('ProjectForm', () => {
-  it('should render create form by default', () => {
+  it('renders create form by default', () => {
     render(<ProjectForm />, { wrapper: createWrapper() })
 
     expect(screen.getByText('Create New Project')).toBeInTheDocument()
@@ -39,7 +40,7 @@ describe('ProjectForm', () => {
     expect(screen.getByRole('button', { name: 'Create Project' })).toBeInTheDocument()
   })
 
-  it('should render edit form when mode is edit', () => {
+  it('renders edit form when mode is edit', () => {
     const initialData = {
       id: '1',
       name: 'Test Project',
@@ -56,7 +57,7 @@ describe('ProjectForm', () => {
     expect(screen.getByRole('button', { name: 'Update Project' })).toBeInTheDocument()
   })
 
-  it('should show validation error for empty project name', async () => {
+  it('shows validation error for empty project name', async () => {
     const user = userEvent.setup()
     render(<ProjectForm />, { wrapper: createWrapper() })
 
@@ -68,7 +69,7 @@ describe('ProjectForm', () => {
     })
   })
 
-  it('should allow valid form submission', async () => {
+  it('allows valid form submission', async () => {
     const user = userEvent.setup()
     render(<ProjectForm />, { wrapper: createWrapper() })
 
@@ -84,7 +85,7 @@ describe('ProjectForm', () => {
     expect(screen.queryByText('Project name is required')).not.toBeInTheDocument()
   })
 
-  it('should show back link', () => {
+  it('shows back link', () => {
     render(<ProjectForm />, { wrapper: createWrapper() })
 
     const backLink = screen.getByRole('link', { name: /back to projects/i })

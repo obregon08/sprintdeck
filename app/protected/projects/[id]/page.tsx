@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth-server";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Plus } from "lucide-react";
 import Link from "next/link";
+import { TaskList } from "@/components/task-list";
+import { QueryProvider } from "@/components/query-provider";
 import type { ProjectDetailPageProps } from "@/types";
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -35,40 +37,42 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-8">
-      <div className="flex items-center gap-4">
-        <Link
-          href="/protected/projects"
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Projects
-        </Link>
-      </div>
-
-      <div className="space-y-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold">{project.name}</h1>
-            <p className="text-muted-foreground mt-2">
-              {project.description || "No description"}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Link href={`/protected/projects/${project.id}/edit`}>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </Link>
-            <Button variant="outline" size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Task
-            </Button>
-          </div>
+    <QueryProvider>
+      <div className="flex-1 w-full flex flex-col gap-8">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/protected/projects"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Projects
+          </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold">{project.name}</h1>
+              <p className="text-muted-foreground mt-2">
+                {project.description || "No description"}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Link href={`/protected/projects/${project.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </Link>
+              <Link href={`/protected/projects/${project.id}/tasks/create`}>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Task
+                </Button>
+              </Link>
+            </div>
+          </div>
+
           <Card>
             <CardHeader>
               <CardTitle>Project Details</CardTitle>
@@ -93,58 +97,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Tasks</CardTitle>
-              <CardDescription>
-                {project.tasks.length === 0
-                  ? "No tasks yet"
-                  : `${project.tasks.length} task${project.tasks.length === 1 ? "" : "s"}`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {project.tasks.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">
-                    No tasks have been created for this project yet.
-                  </p>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create First Task
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {project.tasks.slice(0, 5).map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium">{task.title}</p>
-                        {task.description && (
-                          <p className="text-sm text-muted-foreground">
-                            {task.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Badge variant="outline">{task.status}</Badge>
-                        <Badge variant="outline">{task.priority}</Badge>
-                      </div>
-                    </div>
-                  ))}
-                  {project.tasks.length > 5 && (
-                    <p className="text-sm text-muted-foreground text-center">
-                      +{project.tasks.length - 5} more tasks
-                    </p>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <TaskList projectId={project.id} />
         </div>
       </div>
-    </div>
+    </QueryProvider>
   );
 } 
