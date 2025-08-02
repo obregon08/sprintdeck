@@ -7,6 +7,7 @@ import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useProjects, useDeleteProject } from "@/hooks";
+import { ProjectsSkeleton } from "@/components/projects-skeleton";
 
 export function ProjectsList() {
   const router = useRouter();
@@ -20,45 +21,46 @@ export function ProjectsList() {
   } = useProjects();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading projects...</p>
-        </div>
-      </div>
-    );
+    return <ProjectsSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-destructive mb-4">Failed to load projects</p>
-        <Button onClick={() => refetch()} variant="outline">
-          Try Again
-        </Button>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-full">
+          <CardContent className="text-center py-12">
+            <p className="text-destructive mb-4">Failed to load projects</p>
+            <Button onClick={() => refetch()} variant="outline">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!projects || projects.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="max-w-md mx-auto">
-          <div className="mb-4">
-            <Plus className="h-12 w-12 text-muted-foreground mx-auto" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-          <p className="text-muted-foreground mb-6">
-            Create your first project to get started with task management.
-          </p>
-          <Link href="/protected/projects/create">
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Your First Project
-            </Button>
-          </Link>
-        </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-full">
+          <CardContent className="text-center py-12">
+            <div className="max-w-md mx-auto">
+              <div className="mb-4">
+                <Plus className="h-12 w-12 text-muted-foreground mx-auto" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+              <p className="text-muted-foreground mb-6">
+                Create your first project to get started with task management.
+              </p>
+              <Link href="/protected/projects/create">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Project
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

@@ -38,6 +38,45 @@ const getPriorityColor = (priority: string) => {
   }
 };
 
+function TasksSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <div className="h-6 bg-muted rounded w-24"></div>
+        <div className="h-9 w-24 bg-muted rounded"></div>
+      </div>
+      <div className="grid gap-4">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="h-6 bg-muted rounded mb-2"></div>
+                  <div className="h-4 bg-muted rounded w-2/3"></div>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <div className="h-8 w-8 bg-muted rounded"></div>
+                  <div className="h-8 w-8 bg-muted rounded"></div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-4 w-4 bg-muted rounded"></div>
+                <div className="h-4 bg-muted rounded w-32"></div>
+              </div>
+              <div className="flex gap-2">
+                <div className="h-5 w-16 bg-muted rounded"></div>
+                <div className="h-5 w-12 bg-muted rounded"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function TaskList({ projectId }: TaskListProps) {
   const deleteTaskMutation = useDeleteTask();
 
@@ -49,37 +88,50 @@ export function TaskList({ projectId }: TaskListProps) {
   } = useTasks(projectId);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading tasks...</p>
-        </div>
-      </div>
-    );
+    return <TasksSkeleton />;
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <p className="text-destructive mb-4">Failed to load tasks</p>
-        <Button onClick={() => refetch()} variant="outline">
-          Try Again
-        </Button>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Tasks</h2>
+        </div>
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-destructive mb-4">Failed to load tasks</p>
+            <Button onClick={() => refetch()} variant="outline">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!tasks || tasks.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-muted-foreground mb-4">No tasks found</p>
-        <Link href={`/protected/projects/${projectId}/tasks/create`}>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create First Task
-          </Button>
-        </Link>
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Tasks</h2>
+          <Link href={`/protected/projects/${projectId}/tasks/create`}>
+            <Button size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Task
+            </Button>
+          </Link>
+        </div>
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No tasks found</p>
+            <Link href={`/protected/projects/${projectId}/tasks/create`}>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Task
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     );
   }
