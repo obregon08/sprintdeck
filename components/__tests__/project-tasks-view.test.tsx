@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { ProjectTasksView } from "../project-tasks-view";
 import { QueryProvider } from "../query-provider";
 import * as hooks from "@/hooks";
+import { vi } from "vitest";
 
 // Mock the hooks
 vi.mock("@/hooks", () => ({
@@ -47,6 +48,7 @@ const renderWithProvider = (component: React.ReactElement) => {
 
 describe("ProjectTasksView", () => {
   const mockUseTasks = vi.mocked(hooks.useTasks);
+  const mockUseUpdateTaskStatus = vi.mocked(hooks.useUpdateTaskStatus);
 
   beforeEach(() => {
     mockUseTasks.mockReturnValue({
@@ -54,7 +56,14 @@ describe("ProjectTasksView", () => {
       isLoading: false,
       error: null,
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    mockUseUpdateTaskStatus.mockReturnValue({
+      mutate: vi.fn(),
+      isPending: false,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   });
 
   it("renders tasks in list view by default", () => {
@@ -84,7 +93,8 @@ describe("ProjectTasksView", () => {
       isLoading: true,
       error: null,
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     renderWithProvider(<ProjectTasksView projectId="project-1" />);
 
@@ -99,7 +109,8 @@ describe("ProjectTasksView", () => {
       isLoading: false,
       error: new Error("Failed to load"),
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     renderWithProvider(<ProjectTasksView projectId="project-1" />);
 

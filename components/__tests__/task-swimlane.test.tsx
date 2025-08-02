@@ -1,7 +1,8 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { TaskSwimlane } from "../task-swimlane";
 import { QueryProvider } from "../query-provider";
 import * as hooks from "@/hooks";
+import { vi } from "vitest";
 
 // Mock the hooks
 vi.mock("@/hooks", () => ({
@@ -55,12 +56,14 @@ describe("TaskSwimlane", () => {
       isLoading: false,
       error: null,
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     mockUseUpdateTaskStatus.mockReturnValue({
       mutate: vi.fn(),
       isPending: false,
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   });
 
   it("renders swimlanes with tasks", () => {
@@ -88,7 +91,8 @@ describe("TaskSwimlane", () => {
       isLoading: true,
       error: null,
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     renderWithProvider(<TaskSwimlane projectId="project-1" />);
 
@@ -107,7 +111,8 @@ describe("TaskSwimlane", () => {
       isLoading: false,
       error: new Error("Failed to load"),
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     renderWithProvider(<TaskSwimlane projectId="project-1" />);
 
@@ -121,7 +126,8 @@ describe("TaskSwimlane", () => {
       isLoading: false,
       error: null,
       refetch: vi.fn(),
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     renderWithProvider(<TaskSwimlane projectId="project-1" />);
 

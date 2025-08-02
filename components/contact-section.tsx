@@ -6,8 +6,8 @@ export function ContactSection() {
           <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
             Get in touch
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Have questions or need help? We're here to support you every step of the way.
+          <p className="text-muted-foreground">
+            Have questions? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.
           </p>
         </div>
         

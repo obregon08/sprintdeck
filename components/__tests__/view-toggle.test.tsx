@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { ViewToggle } from "../view-toggle";
+import { vi } from "vitest";
 
 describe("ViewToggle", () => {
   const mockOnViewModeChange = vi.fn();
