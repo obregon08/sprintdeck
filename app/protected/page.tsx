@@ -1,14 +1,9 @@
-import { redirect } from "next/navigation";
 import { InfoIcon } from "lucide-react";
 import { FetchDataSteps } from "@/components/tutorial/fetch-data-steps";
 import { getSession } from "@/lib/auth-server";
 
 export default async function ProtectedPage() {
   const session = await getSession();
-
-  if (!session) {
-    redirect("/auth/login");
-  }
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12">
