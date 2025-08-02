@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useTasks, useTask } from '../use-tasks'
@@ -19,17 +19,6 @@ const createWrapper = () => {
 }
 
 describe('useTasks', () => {
-  let queryClient: QueryClient
-
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    })
-  })
 
   it('fetches tasks successfully', async () => {
     const mockTasks = [
@@ -91,17 +80,6 @@ describe('useTasks', () => {
 })
 
 describe('useTask', () => {
-  let queryClient: QueryClient
-
-  beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    })
-  })
 
   it('fetches single task successfully', async () => {
     const mockTask = {

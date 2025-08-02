@@ -55,8 +55,8 @@ describe('TaskForm', () => {
       id: '1',
       title: 'Test Task',
       description: 'Test description',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
+      status: 'IN_PROGRESS' as const,
+      priority: 'HIGH' as const,
       assigneeId: null,
     }
 
