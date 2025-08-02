@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Plus } from "lucide-react";
 import Link from "next/link";
-import { TaskList } from "@/components/task-list";
+import { ProjectTasksView } from "@/components/project-tasks-view";
 import type { ProjectDetailPageProps } from "@/types";
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -91,7 +91,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           </CardContent>
         </Card>
 
-        <TaskList projectId={project.id} />
+        <ProjectTasksView projectId={project.id} />
       </div>
     </div>
   );

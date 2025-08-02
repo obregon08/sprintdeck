@@ -58,7 +58,6 @@ describe('TaskList', () => {
   it('renders task list with tasks', () => {
     render(<TaskList projectId="project-1" />, { wrapper: createWrapper() })
 
-    expect(screen.getByText('Tasks (2)')).toBeInTheDocument()
     expect(screen.getByText('Test Task 1')).toBeInTheDocument()
     expect(screen.getByText('Test Task 2')).toBeInTheDocument()
     expect(screen.getByText('A test task')).toBeInTheDocument()
@@ -89,14 +88,6 @@ describe('TaskList', () => {
     )
 
     expect(editDeleteButtons).toHaveLength(4) // 2 edit + 2 delete buttons
-  })
-
-  it('shows add task button', () => {
-    render(<TaskList projectId="project-1" />, { wrapper: createWrapper() })
-
-    const addButton = screen.getByRole('link', { name: /add task/i })
-    expect(addButton).toBeInTheDocument()
-    expect(addButton).toHaveAttribute('href', '/protected/projects/project-1/tasks/create')
   })
 
   it('shows task creation date', () => {

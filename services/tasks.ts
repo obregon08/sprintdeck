@@ -1,4 +1,4 @@
-import type { TaskWithDetails, TaskFormData } from '@/types'
+import type { TaskWithDetails, TaskFormData, TaskStatus } from '@/types'
 
 const createApiBase = (projectId: string) => `/api/projects/${projectId}/tasks`
 
@@ -77,6 +77,25 @@ export const taskServices = {
     if (!response.ok) {
       const error = await response.json()
       throw new Error(error.error || "Failed to delete task")
+    }
+
+    return response.json()
+  },
+
+  // Update task status only
+  async updateTaskStatus(projectId: string, taskId: string, status: TaskStatus): Promise<TaskWithDetails> {
+    const response = await fetch(`${createApiBase(projectId)}/${taskId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ status }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || "Failed to update task status")
     }
 
     return response.json()

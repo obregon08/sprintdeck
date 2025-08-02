@@ -93,113 +93,85 @@ export function TaskList({ projectId }: TaskListProps) {
 
   if (error) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Tasks</h2>
-        </div>
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-destructive mb-4">Failed to load tasks</p>
-            <Button onClick={() => refetch()} variant="outline">
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="text-center py-8">
+          <p className="text-destructive mb-4">Failed to load tasks</p>
+          <Button onClick={() => refetch()} variant="outline">
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   if (!tasks || tasks.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Tasks</h2>
+      <Card>
+        <CardContent className="text-center py-8">
+          <p className="text-muted-foreground mb-4">No tasks found</p>
           <Link href={`/protected/projects/${projectId}/tasks/create`}>
-            <Button size="sm">
+            <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Add Task
+              Create First Task
             </Button>
           </Link>
-        </div>
-        <Card>
-          <CardContent className="text-center py-8">
-            <p className="text-muted-foreground mb-4">No tasks found</p>
-            <Link href={`/protected/projects/${projectId}/tasks/create`}>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create First Task
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Tasks ({tasks.length})</h2>
-        <Link href={`/protected/projects/${projectId}/tasks/create`}>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        </Link>
-      </div>
-
-      <div className="grid gap-4">
-        {tasks.map((task) => (
-          <Card key={task.id} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{task.title}</CardTitle>
-                  <CardDescription className="mt-2">
-                    {task.description || "No description"}
-                  </CardDescription>
-                </div>
-                <div className="flex gap-2 ml-4">
-                  <Link href={`/protected/projects/${projectId}/tasks/${task.id}/edit`}>
-                    <Button size="sm" variant="ghost">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
-                        deleteTaskMutation.mutate({ projectId, taskId: task.id });
-                      }
-                    }}
-                    disabled={deleteTaskMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
+    <div className="grid gap-4">
+      {tasks.map((task) => (
+        <Card key={task.id} className="hover:shadow-md transition-shadow">
+          <CardHeader className="pb-3">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <CardTitle className="text-lg">{task.title}</CardTitle>
+                <CardDescription className="mt-2">
+                  {task.description || "No description"}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2 ml-4">
+                <Link href={`/protected/projects/${projectId}/tasks/${task.id}/edit`}>
+                  <Button size="sm" variant="ghost">
+                    <Edit className="h-4 w-4" />
                   </Button>
-                </div>
+                </Link>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => {
+                    if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+                      deleteTaskMutation.mutate({ projectId, taskId: task.id });
+                    }
+                  }}
+                  disabled={deleteTaskMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  Created {new Date(task.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex gap-2 mt-3">
-                <Badge className={getStatusColor(task.status)}>
-                  {task.status.replace("_", " ")}
-                </Badge>
-                <Badge className={getPriorityColor(task.priority)}>
-                  {task.priority}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>
+                Created {new Date(task.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Badge className={getStatusColor(task.status)}>
+                {task.status.replace("_", " ")}
+              </Badge>
+              <Badge className={getPriorityColor(task.priority)}>
+                {task.priority}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 } 
