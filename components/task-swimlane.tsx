@@ -9,6 +9,9 @@ import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useTasks, useDeleteTask, useUpdateTaskStatus } from "@/hooks";
 import type { TaskListProps, TaskWithDetails, TaskStatus } from "@/types";
+import { TaskFilter } from "@/components/task-filter";
+import { useTaskFilter } from "@/contexts/task-filter-context";
+import { filterAndSortTasks } from "@/lib/utils/filter-utils";
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -192,6 +195,7 @@ function SwimlaneSkeleton() {
 export function TaskSwimlane({ projectId }: TaskListProps) {
   const deleteTaskMutation = useDeleteTask();
   const updateTaskStatusMutation = useUpdateTaskStatus();
+  const { state: filterState } = useTaskFilter();
 
   const {
     data: tasks,
@@ -233,24 +237,30 @@ export function TaskSwimlane({ projectId }: TaskListProps) {
     );
   }
 
+  // Apply filters and sorting
+  const filteredTasks = tasks ? filterAndSortTasks(tasks, filterState) : [];
+
   if (!tasks || tasks.length === 0) {
     return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground mb-4">No tasks found</p>
-          <Link href={`/protected/projects/${projectId}/tasks/create`}>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create First Task
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <TaskFilter />
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No tasks found</p>
+            <Link href={`/protected/projects/${projectId}/tasks/create`}>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Task
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   // Group tasks by status
-  const tasksByStatus = tasks.reduce((acc, task) => {
+  const tasksByStatus = filteredTasks.reduce((acc, task) => {
     if (!acc[task.status]) {
       acc[task.status] = [];
     }
@@ -259,20 +269,23 @@ export function TaskSwimlane({ projectId }: TaskListProps) {
   }, {} as Record<TaskStatus, TaskWithDetails[]>);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {TASK_STATUSES.map((status) => (
-          <Swimlane
-            key={status}
-            status={status}
-            tasks={tasksByStatus[status] || []}
-            projectId={projectId}
-            onDrop={handleDropTask}
-            onDelete={handleDeleteTask}
-            isUpdating={updateTaskStatusMutation.isPending}
-          />
-        ))}
-      </div>
-    </DndProvider>
+    <div className="space-y-4">
+      <TaskFilter />
+      <DndProvider backend={HTML5Backend}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {TASK_STATUSES.map((status) => (
+            <Swimlane
+              key={status}
+              status={status}
+              tasks={tasksByStatus[status] || []}
+              projectId={projectId}
+              onDrop={handleDropTask}
+              onDelete={handleDeleteTask}
+              isUpdating={updateTaskStatusMutation.isPending}
+            />
+          ))}
+        </div>
+      </DndProvider>
+    </div>
   );
 } 

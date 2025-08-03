@@ -7,6 +7,9 @@ import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useTasks, useDeleteTask } from "@/hooks";
 import type { TaskListProps } from "@/types";
+import { TaskFilter } from "@/components/task-filter";
+import { useTaskFilter } from "@/contexts/task-filter-context";
+import { filterAndSortTasks } from "@/lib/utils/filter-utils";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -79,6 +82,7 @@ function TasksSkeleton() {
 
 export function TaskList({ projectId }: TaskListProps) {
   const deleteTaskMutation = useDeleteTask();
+  const { state: filterState } = useTaskFilter();
 
   const {
     data: tasks,
@@ -104,74 +108,83 @@ export function TaskList({ projectId }: TaskListProps) {
     );
   }
 
+  // Apply filters and sorting
+  const filteredTasks = tasks ? filterAndSortTasks(tasks, filterState) : [];
+
   if (!tasks || tasks.length === 0) {
     return (
-      <Card>
-        <CardContent className="text-center py-8">
-          <p className="text-muted-foreground mb-4">No tasks found</p>
-          <Link href={`/protected/projects/${projectId}/tasks/create`}>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create First Task
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <TaskFilter />
+        <Card>
+          <CardContent className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No tasks found</p>
+            <Link href={`/protected/projects/${projectId}/tasks/create`}>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Task
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <div className="grid gap-4">
-      {tasks.map((task) => (
-        <Card key={task.id} className="hover:shadow-md transition-shadow">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <CardTitle className="text-lg">{task.title}</CardTitle>
-                <CardDescription className="mt-2">
-                  {task.description || "No description"}
-                </CardDescription>
-              </div>
-              <div className="flex gap-2 ml-4">
-                <Link href={`/protected/projects/${projectId}/tasks/${task.id}/edit`}>
-                  <Button size="sm" variant="ghost">
-                    <Edit className="h-4 w-4" />
+    <div className="space-y-4">
+      <TaskFilter />
+      <div className="grid gap-4">
+        {filteredTasks.map((task) => (
+          <Card key={task.id} className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle className="text-lg">{task.title}</CardTitle>
+                  <CardDescription className="mt-2">
+                    {task.description || "No description"}
+                  </CardDescription>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <Link href={`/protected/projects/${projectId}/tasks/${task.id}/edit`}>
+                    <Button size="sm" variant="ghost">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => {
+                      if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+                        deleteTaskMutation.mutate({ projectId, taskId: task.id });
+                      }
+                    }}
+                    disabled={deleteTaskMutation.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
-                      deleteTaskMutation.mutate({ projectId, taskId: task.id });
-                    }
-                  }}
-                  disabled={deleteTaskMutation.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                </div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>
-                Created {new Date(task.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex gap-2 mt-3">
-              <Badge className={getStatusColor(task.status)}>
-                {task.status.replace("_", " ")}
-              </Badge>
-              <Badge className={getPriorityColor(task.priority)}>
-                {task.priority}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  Created {new Date(task.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Badge className={getStatusColor(task.status)}>
+                  {task.status.replace("_", " ")}
+                </Badge>
+                <Badge className={getPriorityColor(task.priority)}>
+                  {task.priority}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 } 
