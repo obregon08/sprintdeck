@@ -11,11 +11,14 @@ export default async function CreateTaskPage({ params }: CreateTaskPageProps) {
   const session = await getSession();
   const { id } = await params;
 
-  // Verify project belongs to user
+  // Verify user has access to project (owner or member)
   const project = await db.project.findFirst({
     where: {
       id: id,
-      userId: session!.user.id,
+      OR: [
+        { userId: session!.user.id }, // Project owner
+        { members: { some: { userId: session!.user.id } } }, // Project member
+      ],
     },
   });
 

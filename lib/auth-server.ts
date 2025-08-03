@@ -44,4 +44,48 @@ export async function getSession(): Promise<Session | null> {
   }
 
   return session
+}
+
+// Admin client for user lookup (requires service role key)
+export async function createAdminClient() {
+  const { createClient } = await import("@supabase/supabase-js")
+  
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  )
+}
+
+export async function findUserByEmail(email: string): Promise<{ id: string; email: string; name?: string } | null> {
+  try {
+    const supabase = await createAdminClient()
+    
+    const { data: users, error } = await supabase.auth.admin.listUsers()
+    
+    if (error) {
+      console.error("Error fetching users:", error)
+      return null
+    }
+    
+    const user = users.users.find(u => u.email?.toLowerCase() === email.toLowerCase())
+    
+    if (!user) {
+      return null
+    }
+    
+    return {
+      id: user.id,
+      email: user.email || "",
+      name: user.user_metadata?.name || user.email || "",
+    }
+  } catch (error) {
+    console.error("Error in findUserByEmail:", error)
+    return null
+  }
 } 

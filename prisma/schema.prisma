@@ -18,12 +18,26 @@ model Project {
   id          String   @id @default(cuid())
   name        String
   description String?
-  userId      String   // References auth.users.id from Supabase
+  userId      String   // References auth.users.id from Supabase (project owner)
   tasks       Task[]
+  members     ProjectMember[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("projects")
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String      // References auth.users.id from Supabase
+  role      MemberRole  @default(MEMBER)
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([projectId, userId])
+  @@map("project_members")
 }
 
 model Task {
@@ -53,4 +67,10 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
 }

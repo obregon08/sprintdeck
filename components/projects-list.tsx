@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useProjects, useDeleteProject } from "@/hooks";
+import { useProjects, useDeleteProject, useMyProjectRole } from "@/hooks";
 import { ProjectsSkeleton } from "@/components/projects-skeleton";
 import { ProjectFilter } from "@/components/project-filter";
 import { useProjectFilter } from "@/contexts/project-filter-context";
@@ -95,28 +95,30 @@ export function ProjectsList() {
                     {project.description || "No description"}
                   </CardDescription>
                 </div>
-                <div className="flex gap-2 ml-4">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => router.push(`/protected/projects/${project.id}/edit`)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
-                        deleteProjectMutation.mutate(project.id);
-                      }
-                    }}
-                    disabled={deleteProjectMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                {project.userId === session?.user?.id && (
+                  <div className="flex gap-2 ml-4">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => router.push(`/protected/projects/${project.id}/edit`)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
+                          deleteProjectMutation.mutate(project.id);
+                        }
+                      }}
+                      disabled={deleteProjectMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardHeader>
             <CardContent>

@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, X, ArrowUp, ArrowDown } from "lucide-react";
 import { useTaskFilter } from "@/contexts/task-filter-context";
+import { useProjectAssignees } from "@/hooks/use-users";
 import type { TaskStatus, Priority } from "@prisma/client";
 
 const TASK_STATUS_OPTIONS: { value: TaskStatus | "ALL"; label: string }[] = [
@@ -31,8 +32,9 @@ const SORT_OPTIONS: { value: string; label: string }[] = [
   { value: "status", label: "Status" },
 ];
 
-export function TaskFilter() {
+export function TaskFilter({ projectId }: { projectId: string }) {
   const { state, dispatch } = useTaskFilter();
+  const { data: assignees = [] } = useProjectAssignees(projectId);
 
   const handleSearchChange = (value: string) => {
     dispatch({ type: "SET_SEARCH", payload: value });
@@ -137,7 +139,11 @@ export function TaskFilter() {
           <SelectContent>
             <SelectItem value="ALL">All Assignees</SelectItem>
             <SelectItem value="unassigned">Unassigned</SelectItem>
-            {/* In a real app, you'd populate this with actual user IDs */}
+            {assignees.map((assignee) => (
+              <SelectItem key={assignee.id} value={assignee.id}>
+                {assignee.name || assignee.email}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -209,7 +215,13 @@ export function TaskFilter() {
           )}
           {state.assignee !== "ALL" && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded">
-              Assignee: {state.assignee === "unassigned" ? "Unassigned" : state.assignee}
+              Assignee: {
+                state.assignee === "unassigned" 
+                  ? "Unassigned" 
+                  : assignees.find(a => a.id === state.assignee)?.name || 
+                    assignees.find(a => a.id === state.assignee)?.email || 
+                    state.assignee
+              }
               <button
                 onClick={() => dispatch({ type: "SET_ASSIGNEE", payload: "ALL" })}
                 className="ml-1 hover:bg-primary/20 rounded"

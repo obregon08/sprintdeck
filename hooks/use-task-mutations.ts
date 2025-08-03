@@ -69,21 +69,23 @@ export function useUpdateTaskStatus() {
       const previousTasks = queryClient.getQueryData(["tasks", projectId]);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(["tasks", projectId], (old: any) => {
-        if (!old) return old;
-        return old.map((task: any) =>
-          task.id === taskId ? { ...task, status, updatedAt: new Date().toISOString() } : task
+      queryClient.setQueryData(["tasks", projectId], (old: unknown) => {
+        if (!old || !Array.isArray(old)) return old;
+        return old.map((task: unknown) =>
+          task && typeof task === 'object' && 'id' in task && task.id === taskId 
+            ? { ...task, status, updatedAt: new Date().toISOString() } 
+            : task
         );
       });
 
       // Return a context object with the snapshotted value
       return { previousTasks };
     },
-    onSuccess: (_, { status }) => {
+    onSuccess: () => {
       // Show success feedback (optional - since the UI updates immediately)
-      console.log(`Task status updated to ${status}`);
+      console.log('Task status updated successfully');
     },
-    onError: (err, { projectId, status }, context) => {
+    onError: (err, { projectId }, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousTasks) {
         queryClient.setQueryData(["tasks", projectId], context.previousTasks);

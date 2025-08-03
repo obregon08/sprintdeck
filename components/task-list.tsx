@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
-import { useTasks, useDeleteTask } from "@/hooks";
+import { useTasks, useDeleteTask, useMyProjectRole } from "@/hooks";
 import type { TaskListProps } from "@/types";
 import { TaskFilter } from "@/components/task-filter";
 import { useTaskFilter } from "@/contexts/task-filter-context";
@@ -83,6 +83,7 @@ function TasksSkeleton() {
 export function TaskList({ projectId }: TaskListProps) {
   const deleteTaskMutation = useDeleteTask();
   const { state: filterState } = useTaskFilter();
+  const { data: userRole } = useMyProjectRole(projectId);
 
   const {
     data: tasks,
@@ -114,7 +115,7 @@ export function TaskList({ projectId }: TaskListProps) {
   if (!tasks || tasks.length === 0) {
     return (
       <div className="space-y-4">
-        <TaskFilter />
+        <TaskFilter projectId={projectId} />
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-muted-foreground mb-4">No tasks found</p>
@@ -132,7 +133,7 @@ export function TaskList({ projectId }: TaskListProps) {
 
   return (
     <div className="space-y-4">
-      <TaskFilter />
+      <TaskFilter projectId={projectId} />
       <div className="grid gap-4">
         {filteredTasks.map((task) => (
           <Card key={task.id} className="hover:shadow-md transition-shadow">
@@ -144,26 +145,28 @@ export function TaskList({ projectId }: TaskListProps) {
                     {task.description || "No description"}
                   </CardDescription>
                 </div>
-                <div className="flex gap-2 ml-4">
-                  <Link href={`/protected/projects/${projectId}/tasks/${task.id}/edit`}>
-                    <Button size="sm" variant="ghost">
-                      <Edit className="h-4 w-4" />
+                {userRole?.role && (
+                  <div className="flex gap-2 ml-4">
+                    <Link href={`/protected/projects/${projectId}/tasks/${task.id}/edit`}>
+                      <Button size="sm" variant="ghost">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => {
+                        if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+                          deleteTaskMutation.mutate({ projectId, taskId: task.id });
+                        }
+                      }}
+                      disabled={deleteTaskMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
-                  </Link>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
-                        deleteTaskMutation.mutate({ projectId, taskId: task.id });
-                      }
-                    }}
-                    disabled={deleteTaskMutation.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+                  </div>
+                )}
               </div>
             </CardHeader>
             <CardContent className="pt-0">

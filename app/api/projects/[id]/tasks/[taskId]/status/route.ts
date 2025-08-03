@@ -15,11 +15,14 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Verify the project belongs to the user
+    // Verify user has access to project (owner or member)
     const project = await db.project.findFirst({
       where: {
         id: id,
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id }, // Project owner
+          { members: { some: { userId: session.user.id } } }, // Project member
+        ],
       },
     });
 

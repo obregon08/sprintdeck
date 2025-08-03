@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Plus } from "lucide-react";
 import Link from "next/link";
 import { ProjectTasksView } from "@/components/project-tasks-view";
+import { InviteUserButton } from "@/components/invite-user-button";
+import { ProjectMembersModal } from "@/components/project-members-modal";
 import type { ProjectDetailPageProps } from "@/types";
 
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
@@ -16,7 +18,10 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const project = await db.project.findFirst({
     where: {
       id: id,
-      userId: session!.user.id,
+      OR: [
+        { userId: session!.user.id }, // Project owner
+        { members: { some: { userId: session!.user.id } } }, // Project member
+      ],
     },
     include: {
       tasks: {
@@ -30,6 +35,9 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   if (!project) {
     redirect("/protected/projects");
   }
+
+  // Check if user is project owner (for edit permissions)
+  const isOwner = project.userId === session!.user.id;
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8">
@@ -52,12 +60,16 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/protected/projects/${project.id}/edit`}>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-            </Link>
+            {isOwner && (
+              <Link href={`/protected/projects/${project.id}/edit`}>
+                <Button variant="outline" size="sm">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </Link>
+            )}
+            {isOwner && <InviteUserButton projectId={project.id} />}
+            <ProjectMembersModal projectId={project.id} />
             <Link href={`/protected/projects/${project.id}/tasks/create`}>
               <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
@@ -90,7 +102,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </div>
           </CardContent>
         </Card>
-
+        
         <ProjectTasksView projectId={project.id} />
       </div>
     </div>

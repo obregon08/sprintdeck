@@ -37,6 +37,7 @@ Add your Supabase credentials:
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 DATABASE_URL=your_supabase_database_url
 ```
 
@@ -82,6 +83,7 @@ The application will be available at [http://localhost:3000](http://localhost:30
 |----------|-------------|----------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | Yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon/public key | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key (for admin operations) | Yes |
 | `DATABASE_URL` | Your Supabase PostgreSQL connection string | Yes |
 | `VERCEL_URL` | Vercel deployment URL (auto-set) | No |
 

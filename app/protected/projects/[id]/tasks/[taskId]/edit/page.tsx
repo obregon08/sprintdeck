@@ -11,13 +11,16 @@ export default async function EditTaskPage({ params }: EditTaskPageProps) {
   const session = await getSession();
   const { id, taskId } = await params;
 
-  // Verify project belongs to user and get task
+  // Verify user has access to project (owner or member) and get task
   const task = await db.task.findFirst({
     where: {
       id: taskId,
       projectId: id,
       project: {
-        userId: session!.user.id,
+        OR: [
+          { userId: session!.user.id }, // Project owner
+          { members: { some: { userId: session!.user.id } } }, // Project member
+        ],
       },
     },
   });

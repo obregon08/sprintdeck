@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { TaskSwimlane } from "../task-swimlane";
 import { QueryProvider } from "../query-provider";
+import { TaskFilterProvider } from "@/contexts/task-filter-context";
 import * as hooks from "@/hooks";
 import { vi } from "vitest";
 
@@ -14,6 +15,11 @@ vi.mock("@/hooks", () => ({
   useUpdateTaskStatus: vi.fn(() => ({
     mutate: vi.fn(),
     isPending: false,
+  })),
+  useMyProjectRole: vi.fn(() => ({
+    data: { role: 'OWNER' },
+    isLoading: false,
+    error: null,
   })),
 }));
 
@@ -43,7 +49,13 @@ const mockTasks = [
 ];
 
 const renderWithProvider = (component: React.ReactElement) => {
-  return render(<QueryProvider>{component}</QueryProvider>);
+  return render(
+    <QueryProvider>
+      <TaskFilterProvider>
+        {component}
+      </TaskFilterProvider>
+    </QueryProvider>
+  );
 };
 
 describe("TaskSwimlane", () => {

@@ -16,7 +16,10 @@ export async function GET() {
 
     const projects = await db.project.findMany({
       where: {
-        userId: session.user.id
+        OR: [
+          { userId: session.user.id }, // Projects owned by user
+          { members: { some: { userId: session.user.id } } }, // Projects where user is a member
+        ],
       },
       include: {
         tasks: {

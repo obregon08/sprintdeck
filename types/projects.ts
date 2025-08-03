@@ -13,6 +13,19 @@ export interface ProjectWithTasks {
   }>;
 }
 
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: "OWNER" | "ADMIN" | "MEMBER";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectWithMembers extends ProjectWithTasks {
+  members: ProjectMember[];
+}
+
 export interface ProjectFormData {
   name: string;
   description: string;
