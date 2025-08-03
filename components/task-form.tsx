@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useCreateTask, useUpdateTask } from "@/hooks";
+import { useCreateTask, useUpdateTask, useProjectAssignees } from "@/hooks";
 import type { TaskFormData, TaskFormProps, TaskStatus, Priority } from "@/types";
 import { useRouter } from "next/navigation";
 
@@ -28,6 +28,7 @@ const PRIORITY_OPTIONS = [
 
 export function TaskForm({ mode = "create", projectId, initialData }: TaskFormProps) {
   const router = useRouter();
+  const { data: assignees, isLoading: isLoadingAssignees } = useProjectAssignees(projectId);
   
   const {
     register,
@@ -41,7 +42,7 @@ export function TaskForm({ mode = "create", projectId, initialData }: TaskFormPr
       description: initialData?.description || "",
       status: initialData?.status || "TODO",
       priority: initialData?.priority || "MEDIUM",
-      assigneeId: initialData?.assigneeId || "",
+      assigneeId: initialData?.assigneeId === null ? "unassigned" : (initialData?.assigneeId || "unassigned"),
     },
   });
 
@@ -49,10 +50,16 @@ export function TaskForm({ mode = "create", projectId, initialData }: TaskFormPr
   const updateTaskMutation = useUpdateTask();
 
   const onSubmit = (data: TaskFormData) => {
+    // Convert "unassigned" to null for the assigneeId
+    const formData = {
+      ...data,
+      assigneeId: data.assigneeId === "unassigned" ? null : data.assigneeId,
+    };
+
     if (mode === "create") {
-      createTaskMutation.mutate({ projectId, data });
+      createTaskMutation.mutate({ projectId, data: formData });
     } else if (mode === "edit" && initialData) {
-      updateTaskMutation.mutate({ projectId, taskId: initialData.id, data });
+      updateTaskMutation.mutate({ projectId, taskId: initialData.id, data: formData });
     }
   };
 
@@ -126,7 +133,7 @@ export function TaskForm({ mode = "create", projectId, initialData }: TaskFormPr
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
@@ -159,6 +166,27 @@ export function TaskForm({ mode = "create", projectId, initialData }: TaskFormPr
                     {PRIORITY_OPTIONS.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
                         {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="assigneeId">Assignee</Label>
+                <Select
+                  value={watch("assigneeId") ?? "unassigned"}
+                  onValueChange={(value) => setValue("assigneeId", value)}
+                  disabled={isLoadingAssignees}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingAssignees ? "Loading..." : "Select assignee"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {assignees?.map((assignee) => (
+                      <SelectItem key={assignee.id} value={assignee.id}>
+                        {assignee.name || assignee.email}
                       </SelectItem>
                     ))}
                   </SelectContent>

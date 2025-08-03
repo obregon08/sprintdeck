@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, User } from "lucide-react";
 import Link from "next/link";
-import { useTasks, useDeleteTask, useMyProjectRole } from "@/hooks";
+import { useTasks, useDeleteTask, useMyProjectRole, useProjectAssignees } from "@/hooks";
 import type { TaskListProps } from "@/types";
 import { TaskFilter } from "@/components/task-filter";
 import { useTaskFilter } from "@/contexts/task-filter-context";
@@ -84,6 +84,7 @@ export function TaskList({ projectId }: TaskListProps) {
   const deleteTaskMutation = useDeleteTask();
   const { state: filterState } = useTaskFilter();
   const { data: userRole } = useMyProjectRole(projectId);
+  const { data: assignees } = useProjectAssignees(projectId);
 
   const {
     data: tasks,
@@ -91,6 +92,13 @@ export function TaskList({ projectId }: TaskListProps) {
     error,
     refetch,
   } = useTasks(projectId);
+
+  // Helper function to get assignee name
+  const getAssigneeName = (assigneeId: string | null) => {
+    if (!assigneeId || !assignees) return null;
+    const assignee = assignees.find(a => a.id === assigneeId);
+    return assignee?.name || assignee?.email || null;
+  };
 
   if (isLoading) {
     return <TasksSkeleton />;
@@ -176,13 +184,23 @@ export function TaskList({ projectId }: TaskListProps) {
                   Created {new Date(task.createdAt).toLocaleDateString()}
                 </span>
               </div>
-              <div className="flex gap-2 mt-3">
-                <Badge className={getStatusColor(task.status)}>
-                  {task.status.replace("_", " ")}
-                </Badge>
-                <Badge className={getPriorityColor(task.priority)}>
-                  {task.priority}
-                </Badge>
+              <div className="mt-3 space-y-2">
+                <div className="flex gap-2">
+                  <Badge className={getStatusColor(task.status)}>
+                    {task.status.replace("_", " ")}
+                  </Badge>
+                  <Badge className={getPriorityColor(task.priority)}>
+                    {task.priority}
+                  </Badge>
+                </div>
+                {task.assigneeId && (
+                  <div className="flex items-center gap-1">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground truncate">
+                      {getAssigneeName(task.assigneeId)}
+                    </span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

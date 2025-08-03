@@ -15,7 +15,7 @@ vi.mock('@/hooks', () => ({
         status: 'TODO',
         priority: 'MEDIUM',
         projectId: 'project-1',
-        assigneeId: null,
+        assigneeId: 'user-1',
         createdAt: '2025-01-15T10:30:00Z',
         updatedAt: '2025-01-15T10:30:00Z',
       },
@@ -43,6 +43,13 @@ vi.mock('@/hooks', () => ({
     data: { role: 'OWNER' },
     isLoading: false,
     error: null,
+  }),
+  useProjectAssignees: () => ({
+    data: [
+      { id: 'user-1', email: 'alice@example.com', name: 'Alice Johnson' },
+      { id: 'user-2', email: 'bob@example.com', name: 'Bob Smith' },
+    ],
+    isLoading: false,
   }),
 }))
 
@@ -86,6 +93,16 @@ describe('TaskList', () => {
 
     expect(screen.getByText('MEDIUM')).toBeInTheDocument()
     expect(screen.getByText('HIGH')).toBeInTheDocument()
+  })
+
+  it('shows assignee badge for assigned tasks', () => {
+    render(<TaskList projectId="project-1" />, { wrapper: createWrapper() })
+
+    // Should show assignee for the first task
+    expect(screen.getByText('Alice Johnson')).toBeInTheDocument()
+    
+    // Should not show assignee for the second task (unassigned)
+    expect(screen.queryByText('Bob Smith')).not.toBeInTheDocument()
   })
 
   it('shows edit and delete buttons for each task', () => {

@@ -17,7 +17,7 @@ export interface TaskFormData {
   description: string;
   status: TaskStatus;
   priority: Priority;
-  assigneeId?: string;
+  assigneeId?: string | null;
 }
 
 export interface CreateTaskData {
@@ -25,7 +25,7 @@ export interface CreateTaskData {
   description?: string;
   status?: TaskStatus;
   priority?: Priority;
-  assigneeId?: string;
+  assigneeId?: string | null;
 }
 
 export interface UpdateTaskData {

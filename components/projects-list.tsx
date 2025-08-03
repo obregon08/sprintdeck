@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useProjects, useDeleteProject, useMyProjectRole } from "@/hooks";
+import { useProjects, useDeleteProject } from "@/hooks";
 import { ProjectsSkeleton } from "@/components/projects-skeleton";
 import { ProjectFilter } from "@/components/project-filter";
 import { useProjectFilter } from "@/contexts/project-filter-context";

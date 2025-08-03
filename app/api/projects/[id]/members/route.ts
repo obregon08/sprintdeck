@@ -36,7 +36,7 @@ export async function GET(
 
     // For now, we'll return the member data with userId
     // In a real app with Supabase auth, you'd join with the auth.users table
-    const projectMembers = members.map((member: any) => ({
+    const projectMembers = members.map((member: { userId: string; role: string }) => ({
       id: member.userId,
       email: `user-${member.userId}@example.com`, // Placeholder - in real app, get from auth.users
       name: `User ${member.userId.slice(0, 8)}`, // Placeholder - in real app, get from auth.users

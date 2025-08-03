@@ -125,7 +125,7 @@ export function ProjectMembersModal({ projectId }: ProjectMembersModalProps) {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => openConfirmDialog({ id: member.id, name: member.name })}
+                        onClick={() => openConfirmDialog({ id: member.id, name: member.name || member.email || 'Unknown User' })}
                         disabled={removeMember.isPending}
                         className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                       >

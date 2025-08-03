@@ -14,6 +14,13 @@ vi.mock('@/hooks', () => ({
     mutate: vi.fn(),
     isPending: false,
   }),
+  useProjectAssignees: () => ({
+    data: [
+      { id: 'user-1', email: 'alice@example.com', name: 'Alice Johnson' },
+      { id: 'user-2', email: 'bob@example.com', name: 'Bob Smith' },
+    ],
+    isLoading: false,
+  }),
 }))
 
 // Mock the router
@@ -47,6 +54,7 @@ describe('TaskForm', () => {
     expect(screen.getByLabelText('Description')).toBeInTheDocument()
     expect(screen.getByText('Status')).toBeInTheDocument()
     expect(screen.getByText('Priority')).toBeInTheDocument()
+    expect(screen.getByText('Assignee')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create Task' })).toBeInTheDocument()
   })
 
@@ -57,7 +65,7 @@ describe('TaskForm', () => {
       description: 'Test description',
       status: 'IN_PROGRESS' as const,
       priority: 'HIGH' as const,
-      assigneeId: null,
+      assigneeId: 'user-1',
     }
 
     render(<TaskForm mode="edit" projectId="project-1" initialData={initialData} />, {
@@ -123,7 +131,7 @@ describe('TaskForm', () => {
     expect(screen.getByLabelText('Description')).toHaveAttribute('placeholder', 'Enter task description (optional)')
   })
 
-  it('shows status and priority dropdowns', () => {
+  it('shows status, priority, and assignee dropdowns', () => {
     render(<TaskForm projectId="project-1" />, { wrapper: createWrapper() })
 
     // Check that status dropdown is present
@@ -131,5 +139,24 @@ describe('TaskForm', () => {
     
     // Check that priority dropdown is present
     expect(screen.getByText('Priority')).toBeInTheDocument()
+
+    // Check that assignee dropdown is present
+    expect(screen.getByText('Assignee')).toBeInTheDocument()
+  })
+
+  it('shows assignee options in dropdown', async () => {
+    const user = userEvent.setup()
+    render(<TaskForm projectId="project-1" />, { wrapper: createWrapper() })
+
+    const assigneeSelect = screen.getByText('Assignee').parentElement?.querySelector('button')
+    if (assigneeSelect) {
+      await user.click(assigneeSelect)
+      
+      // Check that assignee options are present
+      const unassignedElements = screen.getAllByText('Unassigned')
+      expect(unassignedElements.length).toBeGreaterThan(0)
+      expect(screen.getByText('Alice Johnson')).toBeInTheDocument()
+      expect(screen.getByText('Bob Smith')).toBeInTheDocument()
+    }
   })
 }) 

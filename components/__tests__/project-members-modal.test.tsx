@@ -4,6 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ProjectMembersModal } from '../project-members-modal'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Using any for test mocks to avoid complex React Query type matching
+
 // Mock the hooks
 vi.mock('@/hooks/use-users', () => ({
   useProjectMembers: vi.fn(),

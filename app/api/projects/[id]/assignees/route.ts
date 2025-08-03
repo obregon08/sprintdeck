@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth-server";
+import { getSession, createAdminClient } from "@/lib/auth-server";
 import { db } from "@/lib/db";
 
 export async function GET(
@@ -34,18 +34,65 @@ export async function GET(
       where: { projectId },
     });
 
-    // For demo purposes, return mock user data with project member roles
-    // In a real app, you'd join with a users table or Supabase auth
-    const mockUsers = [
-      { id: "user-1", email: "alice@example.com", name: "Alice Johnson" },
-      { id: "user-2", email: "bob@example.com", name: "Bob Smith" },
-      { id: "user-3", email: "carol@example.com", name: "Carol Davis" },
-      { id: "user-4", email: "dave@example.com", name: "Dave Wilson" },
-    ];
+    // Create admin client to fetch user data
+    const supabase = await createAdminClient();
+    const { data: users, error } = await supabase.auth.admin.listUsers();
+    
+    if (error) {
+      console.error("Error fetching users:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch user data" },
+        { status: 500 }
+      );
+    }
 
-    // Filter to only show users who are project members
-    const projectMemberIds = members.map(m => m.userId);
-    const assignees = mockUsers.filter(user => projectMemberIds.includes(user.id));
+    // Create a map of user IDs to user data
+    const userMap = new Map();
+    users.users.forEach(user => {
+      userMap.set(user.id, {
+        id: user.id,
+        email: user.email || "",
+        name: user.user_metadata?.name || user.email || "",
+      });
+    });
+
+    // Create assignees list including project owner and members
+    const assignees = [];
+
+    // Add project owner
+    const ownerUser = userMap.get(project.userId);
+    if (ownerUser) {
+      assignees.push({
+        id: project.userId,
+        email: ownerUser.email,
+        name: ownerUser.name,
+      });
+    }
+
+    // Add project members
+    members.forEach((member: { userId: string }) => {
+      const memberUser = userMap.get(member.userId);
+      if (memberUser) {
+        assignees.push({
+          id: member.userId,
+          email: memberUser.email,
+          name: memberUser.name,
+        });
+      }
+    });
+
+    // Add current user if not already included
+    const currentUserIncluded = assignees.some(assignee => assignee.id === session.user.id);
+    if (!currentUserIncluded) {
+      const currentUser = userMap.get(session.user.id);
+      if (currentUser) {
+        assignees.push({
+          id: session.user.id,
+          email: currentUser.email,
+          name: currentUser.name,
+        });
+      }
+    }
 
     return NextResponse.json(assignees);
   } catch (error) {

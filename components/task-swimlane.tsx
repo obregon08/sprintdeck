@@ -5,13 +5,19 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Edit, Trash2, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, Calendar, User } from "lucide-react";
 import Link from "next/link";
-import { useTasks, useDeleteTask, useUpdateTaskStatus, useMyProjectRole } from "@/hooks";
+import { useTasks, useDeleteTask, useUpdateTaskStatus, useMyProjectRole, useProjectAssignees } from "@/hooks";
 import type { TaskListProps, TaskWithDetails, TaskStatus } from "@/types";
 import { TaskFilter } from "@/components/task-filter";
 import { useTaskFilter } from "@/contexts/task-filter-context";
 import { filterAndSortTasks } from "@/lib/utils/filter-utils";
+
+interface Assignee {
+  id: string;
+  email: string;
+  name?: string;
+}
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -51,13 +57,15 @@ const DraggableTaskCard = ({
   projectId, 
   onDelete,
   isUpdating,
-  userRole
+  userRole,
+  assignees
 }: { 
   task: TaskWithDetails; 
   projectId: string; 
   onDelete: (taskId: string) => void;
   isUpdating: boolean;
   userRole?: { role: string };
+  assignees?: Assignee[];
 }) => {
   const [{ isDragging }, drag] = useDrag({
     type: "TASK",
@@ -66,6 +74,13 @@ const DraggableTaskCard = ({
       isDragging: monitor.isDragging(),
     }),
   });
+
+  // Helper function to get assignee name
+  const getAssigneeName = (assigneeId: string | null) => {
+    if (!assigneeId || !assignees) return null;
+    const assignee = assignees.find(a => a.id === assigneeId);
+    return assignee?.name || assignee?.email || null;
+  };
 
   return (
     <div
@@ -111,10 +126,20 @@ const DraggableTaskCard = ({
               Created {new Date(task.createdAt).toLocaleDateString()}
             </span>
           </div>
-          <div className="flex gap-2 mt-3">
-            <Badge className={getPriorityColor(task.priority)}>
-              {task.priority}
-            </Badge>
+          <div className="mt-3 space-y-2">
+            <div className="flex gap-2">
+              <Badge className={getPriorityColor(task.priority)}>
+                {task.priority}
+              </Badge>
+            </div>
+            {task.assigneeId && (
+              <div className="flex items-center gap-1">
+                <User className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground truncate">
+                  {getAssigneeName(task.assigneeId)}
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -130,7 +155,8 @@ const Swimlane = ({
   onDrop, 
   onDelete,
   isUpdating,
-  userRole
+  userRole,
+  assignees
 }: { 
   status: TaskStatus; 
   tasks: TaskWithDetails[]; 
@@ -139,6 +165,7 @@ const Swimlane = ({
   onDelete: (taskId: string) => void;
   isUpdating: boolean;
   userRole?: { role: string };
+  assignees?: Assignee[];
 }) => {
   const [{ isOver }, drop] = useDrop({
     accept: "TASK",
@@ -172,6 +199,7 @@ const Swimlane = ({
             onDelete={onDelete}
             isUpdating={isUpdating}
             userRole={userRole}
+            assignees={assignees}
           />
         ))}
       </div>
@@ -204,6 +232,7 @@ export function TaskSwimlane({ projectId }: TaskListProps) {
   const updateTaskStatusMutation = useUpdateTaskStatus();
   const { state: filterState } = useTaskFilter();
   const { data: userRole } = useMyProjectRole(projectId);
+  const { data: assignees } = useProjectAssignees(projectId);
 
   const {
     data: tasks,
@@ -291,6 +320,7 @@ export function TaskSwimlane({ projectId }: TaskListProps) {
               onDelete={handleDeleteTask}
               isUpdating={updateTaskStatusMutation.isPending}
               userRole={userRole}
+              assignees={assignees}
             />
           ))}
         </div>

@@ -21,6 +21,13 @@ vi.mock("@/hooks", () => ({
     isLoading: false,
     error: null,
   })),
+  useProjectAssignees: vi.fn(() => ({
+    data: [
+      { id: 'user-1', email: 'alice@example.com', name: 'Alice Johnson' },
+      { id: 'user-2', email: 'bob@example.com', name: 'Bob Smith' },
+    ],
+    isLoading: false,
+  })),
 }));
 
 const mockTasks = [

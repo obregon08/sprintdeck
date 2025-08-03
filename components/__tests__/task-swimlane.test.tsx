@@ -21,6 +21,13 @@ vi.mock("@/hooks", () => ({
     isLoading: false,
     error: null,
   })),
+  useProjectAssignees: vi.fn(() => ({
+    data: [
+      { id: 'user-1', email: 'alice@example.com', name: 'Alice Johnson' },
+      { id: 'user-2', email: 'bob@example.com', name: 'Bob Smith' },
+    ],
+    isLoading: false,
+  })),
 }));
 
 const mockTasks = [
@@ -31,7 +38,7 @@ const mockTasks = [
     status: "TODO" as const,
     priority: "MEDIUM" as const,
     projectId: "project-1",
-    assigneeId: null,
+    assigneeId: "user-1",
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
   },
@@ -87,6 +94,16 @@ describe("TaskSwimlane", () => {
     expect(screen.getByText("Done")).toBeInTheDocument();
     expect(screen.getByText("Test Task 1")).toBeInTheDocument();
     expect(screen.getByText("Test Task 2")).toBeInTheDocument();
+  });
+
+  it("shows assignee badge for assigned tasks", () => {
+    renderWithProvider(<TaskSwimlane projectId="project-1" />);
+
+    // Should show assignee for the first task
+    expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
+    
+    // Should not show assignee for the second task (unassigned)
+    expect(screen.queryByText("Bob Smith")).not.toBeInTheDocument();
   });
 
   it("shows task counts in badges", () => {
