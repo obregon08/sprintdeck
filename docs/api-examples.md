@@ -13,7 +13,7 @@ All endpoints require authentication. Include your session cookie in requests.
 ### 1. List Projects
 **GET** `/api/projects`
 
-Returns all projects for the authenticated user.
+Returns all projects for the authenticated user (including projects where the user is a member).
 
 **Response:**
 ```json
@@ -25,6 +25,16 @@ Returns all projects for the authenticated user.
     "userId": "user123",
     "createdAt": "2025-01-15T10:30:00Z",
     "updatedAt": "2025-01-15T10:30:00Z",
+    "members": [
+      {
+        "id": "member123",
+        "projectId": "clx1234567890",
+        "userId": "user456",
+        "role": "MEMBER",
+        "createdAt": "2025-01-15T10:30:00Z",
+        "updatedAt": "2025-01-15T10:30:00Z"
+      }
+    ],
     "tasks": [
       {
         "id": "task123",
@@ -59,6 +69,7 @@ Creates a new project for the authenticated user.
   "userId": "user123",
   "createdAt": "2025-01-15T10:30:00Z",
   "updatedAt": "2025-01-15T10:30:00Z",
+  "members": [],
   "tasks": []
 }
 ```
@@ -66,7 +77,7 @@ Creates a new project for the authenticated user.
 ### 3. Get Project
 **GET** `/api/projects/{id}`
 
-Returns a specific project with all its tasks.
+Returns a specific project with all its tasks and members.
 
 **Response:**
 ```json
@@ -77,6 +88,16 @@ Returns a specific project with all its tasks.
   "userId": "user123",
   "createdAt": "2025-01-15T10:30:00Z",
   "updatedAt": "2025-01-15T10:30:00Z",
+  "members": [
+    {
+      "id": "member123",
+      "projectId": "clx1234567890",
+      "userId": "user456",
+      "role": "MEMBER",
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-01-15T10:30:00Z"
+    }
+  ],
   "tasks": [
     {
       "id": "task123",
@@ -115,6 +136,7 @@ Updates an existing project.
   "userId": "user123",
   "createdAt": "2025-01-15T10:30:00Z",
   "updatedAt": "2025-01-15T11:00:00Z",
+  "members": [...],
   "tasks": [...]
 }
 ```
@@ -122,7 +144,7 @@ Updates an existing project.
 ### 5. Delete Project
 **DELETE** `/api/projects/{id}`
 
-Deletes a project and all its associated tasks.
+Deletes a project and all its associated tasks and members.
 
 **Response:**
 ```json
@@ -203,30 +225,38 @@ await fetch(`/api/projects/${projectId}`, {
 })
 ```
 
-### Using React with SWR
+### Using React Query
 ```typescript
-import useSWR from 'swr'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 // Fetch projects
-const { data: projects, error } = useSWR('/api/projects', fetcher)
+const { data: projects, isLoading, error } = useQuery({
+  queryKey: ['projects'],
+  queryFn: () => fetch('/api/projects', { credentials: 'include' }).then(res => res.json())
+})
 
 // Create project mutation
-const createProject = async (projectData: { name: string; description?: string }) => {
-  const response = await fetch('/api/projects', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(projectData)
-  })
-  return response.json()
-}
+const queryClient = useQueryClient()
+const createProjectMutation = useMutation({
+  mutationFn: (projectData: { name: string; description?: string }) =>
+    fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(projectData)
+    }).then(res => res.json()),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['projects'] })
+  }
+})
 ```
 
 ## Notes
 
 - All endpoints require authentication
-- Projects are scoped to the authenticated user
-- Deleting a project will cascade delete all associated tasks
+- Projects are scoped to the authenticated user (owner or member)
+- Deleting a project will cascade delete all associated tasks and members
 - Project names are required and cannot be empty
 - Descriptions are optional
-- All timestamps are in ISO 8601 format 
+- All timestamps are in ISO 8601 format
+- Project members have roles: OWNER, ADMIN, MEMBER 

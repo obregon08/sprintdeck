@@ -16,14 +16,7 @@ cd sprintdeck
 npm install
 ```
 
-### 2. Install Blitz.js and Prisma
-
-```bash
-npm install @blitzjs/next @prisma/client prisma zod
-npm install -D tsx
-```
-
-### 3. Set up Supabase
+### 2. Set up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to Settings > API to get your project URL and anon key
@@ -41,15 +34,15 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 DATABASE_URL=your_supabase_database_url
 ```
 
-### 4. Initialize Prisma
+### 3. Initialize Prisma
 
 ```bash
 npx prisma init
 ```
 
-This creates the initial Prisma configuration. The schema has been pre-configured with Project and Task models that work with Supabase Auth.
+This creates the initial Prisma configuration. The schema has been pre-configured with Project, Task, and ProjectMember models that work with Supabase Auth.
 
-### 5. Set up the database
+### 4. Set up the database
 
 ```bash
 # Generate Prisma client
@@ -62,7 +55,7 @@ npx prisma migrate dev --name init
 npm run db:seed
 ```
 
-### 6. Start development server
+### 5. Start development server
 
 ```bash
 npm run dev
@@ -70,7 +63,7 @@ npm run dev
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
-### 7. Test the authentication flow
+### 6. Test the authentication flow
 
 1. Visit the home page
 2. Click "Sign Up" to create an account
@@ -97,6 +90,7 @@ Our database schema works with Supabase Auth:
 - **Supabase Auth Users** - User management is handled by Supabase Auth
 - **Foreign Key References** - Projects and Tasks reference `auth.users.id` from Supabase
 - **Session-Based Queries** - All queries filter by the authenticated user's ID
+- **Project Members** - Projects can have multiple members with different roles
 
 ### Prisma Configuration
 
@@ -104,15 +98,29 @@ The `prisma/schema.prisma` file defines your database schema with models that wo
 
 ```prisma
 model Project {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   name        String
   description String?
-  userId      String   // References auth.users.id from Supabase
+  userId      String          // References auth.users.id from Supabase
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  members     ProjectMember[]
   tasks       Task[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
   @@map("projects")
+}
+
+model ProjectMember {
+  id        String     @id @default(cuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
 }
 
 model Task {
@@ -122,12 +130,32 @@ model Task {
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
   projectId   String
-  project     Project    @relation(fields: [projectId], references: [id])
   assigneeId  String?    // References auth.users.id from Supabase
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  project     Project    @relation(fields: [projectId], references: [id])
 
   @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
 ```
 
@@ -160,40 +188,23 @@ The seed script creates sample data including:
 - Different task statuses and priorities
 - Note: User creation is handled by Supabase Auth, not the seed script
 
-## Blitz.js Setup
+## React Query Setup
 
 ### Project Structure
 
-Blitz.js follows a convention-based structure:
+The application uses React Query for server state management:
 
 ```
-app/
-├── projects/
-│   ├── queries/
-│   ├── mutations/
-│   └── pages/
-├── tasks/
-│   ├── queries/
-│   ├── mutations/
-│   └── pages/
-└── users/
-    ├── queries/
-    ├── mutations/
-    └── pages/
-```
+hooks/
+├── use-projects.ts           # Project query hooks
+├── use-tasks.ts             # Task query hooks
+├── use-project-mutations.ts # Project mutation hooks
+└── use-task-mutations.ts    # Task mutation hooks
 
-### Code Generation
-
-Blitz.js can generate CRUD operations:
-
-```bash
-# Generate a new resource
-blitz generate all project name:string description:string?
-
-# Generate specific parts
-blitz generate query getProjects
-blitz generate mutation createProject
-blitz generate page projects
+services/
+├── projects.ts              # Project API services
+├── tasks.ts                 # Task API services
+└── users.ts                 # User API services
 ```
 
 ### Example Queries and Mutations
@@ -201,47 +212,32 @@ blitz generate page projects
 The project includes sample queries and mutations that work with Supabase Auth:
 
 ```typescript
-// app/projects/queries/getProjects.ts
-import { db } from "lib/db"
-import { auth } from "lib/auth"
+// hooks/use-projects.ts
+import { useQuery } from "@tanstack/react-query";
+import { projectServices } from "@/services";
 
-export default async function getProjects() {
-  const session = await auth()
-  if (!session) throw new Error("Not authenticated")
-  
-  return db.project.findMany({
-    where: { userId: session.user.id },
-    include: {
-      tasks: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  })
+export function useProjects() {
+  return useQuery({
+    queryKey: ["projects"],
+    queryFn: projectServices.fetchProjects,
+  });
 }
-```
 
-```typescript
-// app/projects/mutations/createProject.ts
-import { db } from "lib/db"
-import { auth } from "lib/auth"
-import { z } from "zod"
+// hooks/use-project-mutations.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { projectServices } from "@/services";
 
-const CreateProject = z.object({
-  name: z.string().min(1, "Project name is required"),
-  description: z.string().optional(),
-})
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
-export default async function createProject(input: z.infer<typeof CreateProject>) {
-  const session = await auth()
-  if (!session) throw new Error("Not authenticated")
-
-  return db.project.create({
-    data: {
-      ...input,
-      userId: session.user.id,
+  return useMutation({
+    mutationFn: projectServices.createProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      router.push("/protected/projects");
     },
-  })
+  });
 }
 ```
 
@@ -252,17 +248,17 @@ export default async function createProject(input: z.infer<typeof CreateProject>
 1. **Update Schema** - Modify `prisma/schema.prisma`
 2. **Generate Types** - Run `npm run db:generate`
 3. **Create Migration** - Run `npm run db:migrate`
-4. **Write Queries/Mutations** - Create type-safe operations
+4. **Write Services** - Create API service functions
 5. **Build UI** - Use generated types in components
 
 ### Authentication Integration
 
-When working with Blitz.js queries and mutations:
+When working with React Query hooks and services:
 
-1. **Import Auth Utility** - Use `import { auth } from "lib/auth"`
-2. **Get Session** - Call `const session = await auth()`
-3. **Check Authentication** - Verify `if (!session) throw new Error("Not authenticated")`
-4. **Use User ID** - Access `session.user.id` for database operations
+1. **Import Services** - Use `import { projectServices } from "@/services"`
+2. **Create Hooks** - Use `useQuery` and `useMutation` from React Query
+3. **Handle Errors** - Implement proper error handling in mutations
+4. **Cache Management** - Use `queryClient.invalidateQueries` for cache updates
 
 ### Common Commands
 
@@ -273,8 +269,11 @@ npm run db:generate        # Generate Prisma client
 npm run db:migrate         # Create and apply migration
 npm run db:seed            # Seed database with sample data
 
-# Blitz.js operations
-npm run blitz:codegen      # Generate types and utilities
+# Development
+npm run dev                # Start development server
+npm run build              # Build for production
+npm run lint               # Run ESLint
+npm run test               # Run tests
 ```
 
 ## Available Scripts
@@ -284,9 +283,10 @@ npm run dev                # Start development server
 npm run build              # Build for production
 npm run start              # Start production server
 npm run lint               # Run ESLint
+npm run test               # Run tests with Vitest
+npm run test:watch         # Run tests in watch mode
 npm run db:generate        # Generate Prisma client
 npm run db:migrate         # Create and apply migration
 npm run db:studio          # Open Prisma Studio
 npm run db:seed            # Seed database
-npm run blitz:codegen      # Generate Blitz.js types
 ``` 

@@ -15,7 +15,8 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
-blitz codegen        # Generate Blitz.js types and utilities
+npm run test         # Run tests with Vitest
+npm run test:watch   # Run tests in watch mode
 ```
 
 ## Code Quality
@@ -24,7 +25,8 @@ blitz codegen        # Generate Blitz.js types and utilities
 - **TypeScript** – Type checking across the entire application
 - **Prettier** – Code formatting (configured via ESLint)
 - **Prisma** – Type-safe database operations
-- **Blitz.js** – Full-stack development conventions
+- **React Query** – Server state management with caching
+- **Vitest** – Fast unit testing with React Testing Library
 
 ## Authentication & Middleware
 
@@ -62,22 +64,24 @@ The middleware automatically protects all routes except:
 When creating new pages that require authentication:
 
 ```typescript
-// app/projects/pages/projects.tsx
-import { useQuery } from "@blitzjs/rpc"
-import getProjects from "app/projects/queries/getProjects"
+// app/protected/projects/page.tsx
+import { useProjects } from "@/hooks/use-projects";
 
 export default function ProjectsPage() {
   // This page is automatically protected by middleware
   // If user is not authenticated, they'll be redirected to /auth/login
-  const [projects] = useQuery(getProjects)
+  const { data: projects, isLoading, error } = useProjects();
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading projects</div>;
   
   return (
     <div>
-      {projects.map(project => (
+      {projects?.map(project => (
         <div key={project.id}>{project.name}</div>
       ))}
     </div>
-  )
+  );
 }
 ```
 
@@ -101,74 +105,82 @@ if (
 
 ## Full-Stack Development
 
-### Blitz.js Patterns
+### React Query Patterns
 
-Blitz.js provides a full-stack development experience with strong conventions:
+React Query provides a powerful server state management experience:
 
 #### Queries (Data Fetching)
 
 ```typescript
-// app/projects/queries/getProjects.ts
-import { db } from "db"
-import { auth } from "lib/auth"
+// hooks/use-projects.ts
+import { useQuery } from "@tanstack/react-query";
+import { projectServices } from "@/services";
 
-export default async function getProjects() {
-  const session = await auth()
-  if (!session) throw new Error("Not authenticated")
-  
-  return db.project.findMany({
-    where: { userId: session.userId },
-    include: { tasks: true },
-    orderBy: { createdAt: "desc" }
-  })
+export function useProjects() {
+  return useQuery({
+    queryKey: ["projects"],
+    queryFn: projectServices.fetchProjects,
+  });
 }
 ```
 
 #### Mutations (Data Modifications)
 
 ```typescript
-// app/projects/mutations/createProject.ts
-import { db } from "db"
-import { auth } from "lib/auth"
-import { z } from "zod"
+// hooks/use-project-mutations.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { projectServices } from "@/services";
+import { useRouter } from "next/navigation";
+import { ProjectFormData } from "@/types";
 
-const CreateProject = z.object({
-  name: z.string().min(1),
-  description: z.string().optional()
-})
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
-export default async function createProject(input: z.infer<typeof CreateProject>) {
-  const session = await auth()
-  if (!session) throw new Error("Not authenticated")
-  
-  return db.project.create({
-    data: {
-      ...input,
-      userId: session.userId
-    }
-  })
+  return useMutation({
+    mutationFn: projectServices.createProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      router.push("/protected/projects");
+    },
+    onError: (error) => {
+      console.error("Error creating project:", error);
+    },
+  });
 }
 ```
 
 #### Using in Components
 
 ```typescript
-// app/projects/pages/projects.tsx
-import { useQuery, useMutation } from "@blitzjs/rpc"
-import getProjects from "app/projects/queries/getProjects"
-import createProject from "app/projects/mutations/createProject"
+// app/protected/projects/page.tsx
+import { useProjects } from "@/hooks/use-projects";
+import { useCreateProject } from "@/hooks/use-project-mutations";
+import { ProjectForm } from "@/components/project-form";
 
 export default function ProjectsPage() {
-  const [projects] = useQuery(getProjects)
-  const [createProjectMutation] = useMutation(createProject)
+  const { data: projects, isLoading } = useProjects();
+  const createProjectMutation = useCreateProject();
+  
+  const handleCreateProject = (data: ProjectFormData) => {
+    createProjectMutation.mutate(data);
+  };
   
   return (
     <div>
-      {projects.map(project => (
-        <div key={project.id}>{project.name}</div>
-      ))}
+      <h1>Projects</h1>
+      <ProjectForm onSubmit={handleCreateProject} />
+      {isLoading ? (
+        <p>Loading projects...</p>
+      ) : (
+        <div>
+          {projects?.map(project => (
+            <div key={project.id}>{project.name}</div>
+          ))}
+        </div>
+      )}
     </div>
-  )
+  );
 }
 ```
 
@@ -176,7 +188,7 @@ export default function ProjectsPage() {
 
 #### Schema Management
 
-1. **Define Models** in `db/schema.prisma`
+1. **Define Models** in `prisma/schema.prisma`
 2. **Generate Types** with `npx prisma generate`
 3. **Create Migrations** with `npx prisma migrate dev`
 4. **Use Generated Types** in your code
@@ -187,12 +199,12 @@ Prisma provides end-to-end type safety:
 
 ```typescript
 // Types are automatically generated from your schema
-import { Project, Task, User } from "@prisma/client"
+import { Project, Task, ProjectMember } from "@prisma/client";
 
 // Use in queries
 const projects: Project[] = await db.project.findMany({
-  include: { tasks: true, user: true }
-})
+  include: { tasks: true, members: true }
+});
 
 // Use in mutations
 const project: Project = await db.project.create({
@@ -200,7 +212,7 @@ const project: Project = await db.project.create({
     name: "New Project",
     userId: "user-id"
   }
-})
+});
 ```
 
 ## Customization
@@ -213,19 +225,22 @@ const project: Project = await db.project.create({
 
 Example:
 ```typescript
-// app/dashboard/page.tsx
-import { useQuery } from "@blitzjs/rpc"
-import getProjects from "app/projects/queries/getProjects"
+// app/protected/dashboard/page.tsx
+import { useProjects } from "@/hooks/use-projects";
 
 export default function DashboardPage() {
-  const [projects] = useQuery(getProjects)
+  const { data: projects, isLoading } = useProjects();
   
   return (
     <div>
       <h1>Dashboard</h1>
-      <p>You have {projects.length} projects</p>
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <p>You have {projects?.length || 0} projects</p>
+      )}
     </div>
-  )
+  );
 }
 ```
 
@@ -253,18 +268,29 @@ sprintdeck/
 ├── app/                    # Next.js App Router pages
 │   ├── auth/              # Authentication pages
 │   ├── protected/         # Protected routes
-│   ├── projects/          # Project-related pages and mutations
-│   ├── tasks/             # Task-related pages and mutations
-│   └── users/             # User-related pages and mutations
+│   ├── api/               # API routes
+│   └── globals.css        # Global styles
 ├── components/            # Reusable components
 │   ├── ui/               # shadcn/ui components
 │   └── auth-button.tsx   # Custom components
+├── hooks/                # React Query hooks
+│   ├── use-projects.ts   # Project hooks
+│   ├── use-tasks.ts      # Task hooks
+│   └── use-project-mutations.ts # Mutation hooks
+├── services/             # API service functions
+│   ├── projects.ts       # Project API services
+│   ├── tasks.ts          # Task API services
+│   └── users.ts          # User API services
+├── contexts/             # React Context providers
+│   ├── project-filter-context.tsx
+│   └── task-filter-context.tsx
 ├── lib/                  # Utility functions
 │   └── supabase/         # Supabase configuration
-├── db/                   # Database configuration
+├── prisma/               # Database configuration
 │   ├── schema.prisma     # Prisma schema
 │   ├── migrations/       # Database migrations
 │   └── seed.ts          # Database seeding
+├── test/                 # Test setup and mocks
 ├── middleware.ts         # Next.js middleware
 └── package.json
 ```
@@ -276,7 +302,7 @@ sprintdeck/
 3. **Use shadcn/ui components** when possible
 4. **Keep components focused** - single responsibility
 5. **Add proper TypeScript types**
-6. **Use Blitz.js queries/mutations** for data operations
+6. **Use React Query hooks** for data operations
 7. **Leverage Prisma types** for type safety
 
 ### Authentication Flow
@@ -287,7 +313,7 @@ The authentication system uses Supabase Auth with the following flow:
 2. **Login** → Redirect to protected page
 3. **Password Reset** → Email-based reset
 4. **Protected Routes** → Server-side auth check via middleware
-5. **Session Management** → Blitz.js session handling
+5. **Session Management** → React Query session handling
 
 ## Best Practices
 
@@ -298,7 +324,7 @@ The authentication system uses Supabase Auth with the following flow:
 - Follow ESLint rules
 - Use meaningful variable and function names
 - Organize by feature, not by type
-- Use Blitz.js conventions for queries and mutations
+- Use React Query conventions for queries and mutations
 
 ### Performance
 
@@ -307,7 +333,7 @@ The authentication system uses Supabase Auth with the following flow:
 - Optimize bundle size
 - Use React.memo for expensive components
 - Leverage Prisma's query optimization
-- Use Blitz.js caching strategies
+- Use React Query caching strategies
 
 ### Security
 
@@ -329,24 +355,65 @@ The authentication system uses Supabase Auth with the following flow:
 
 ## Testing
 
+### Testing Setup
+
+The project uses Vitest with React Testing Library:
+
+```bash
+npm run test              # Run all tests
+npm run test:watch        # Run tests in watch mode
+npm run test:coverage     # Run tests with coverage
+npm run test:ui           # Run tests with UI
+```
+
+### Test Structure
+
+```
+test/
+├── setup.ts              # Test setup and mocks
+└── mocks/
+    ├── server.ts         # MSW server setup
+    └── handlers.ts       # API mock handlers
+```
+
+### Writing Tests
+
+```typescript
+// components/__tests__/project-form.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ProjectForm } from '../project-form';
+
+describe('ProjectForm', () => {
+  it('submits form with valid data', async () => {
+    const mockSubmit = vi.fn();
+    render(<ProjectForm onSubmit={mockSubmit} />);
+    
+    fireEvent.change(screen.getByLabelText(/name/i), {
+      target: { value: 'Test Project' }
+    });
+    
+    fireEvent.click(screen.getByRole('button', { name: /create/i }));
+    
+    expect(mockSubmit).toHaveBeenCalledWith({
+      name: 'Test Project',
+      description: ''
+    });
+  });
+});
+```
+
 ### Manual Testing Checklist
 
 - [ ] Authentication flow (sign up, login, logout)
 - [ ] Protected routes access (middleware protection)
 - [ ] Database operations (CRUD)
-- [ ] Blitz.js queries and mutations
+- [ ] React Query queries and mutations
 - [ ] Responsive design on different screen sizes
 - [ ] Dark/light theme switching
 - [ ] Form validation
 - [ ] Error handling
-
-### Future Testing Plans
-
-- Unit tests with Jest
-- Integration tests with Playwright
-- E2E tests for critical user flows
-- Performance testing
-- Database testing with Prisma
+- [ ] Filter and sort functionality
+- [ ] Swimlane drag and drop
 
 ## Debugging
 
@@ -374,10 +441,11 @@ The authentication system uses Supabase Auth with the following flow:
    - Run `npx prisma generate` after schema changes
    - Check migration status with `npx prisma migrate status`
 
-5. **Blitz.js Issues**
-   - Run `blitz codegen` to regenerate types
-   - Check query/mutation file structure
-   - Verify import paths
+5. **React Query Issues**
+   - Check query keys and cache invalidation
+   - Verify API service functions
+   - Check error handling in mutations
+   - Use React Query DevTools for debugging
 
 6. **Middleware Issues**
    - Check middleware matcher configuration
@@ -391,6 +459,7 @@ The authentication system uses Supabase Auth with the following flow:
 - **Next.js DevTools** - Performance monitoring
 - **Prisma Studio** - Database management GUI
 - **Supabase Dashboard** - Database management
+- **React Query DevTools** - Query debugging
 - **Browser DevTools** - Network and console debugging
 
 ## Contributing

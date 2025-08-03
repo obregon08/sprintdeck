@@ -11,23 +11,25 @@
 |                      | Supabase Auth                              | Built-in authentication system          |
 | **Database**         | Prisma ORM                                  | Type-safe database queries and migrations |
 |                      | PostgreSQL (via Supabase)                   | Reliable, scalable database             |
-| **Full-Stack**       | Blitz.js                                    | Full-stack framework with code generation |
+| **State Management** | React Query (TanStack Query)                | Server state management with caching    |
+|                      | React Context + useReducer                 | Client state management for filters     |
 | **Styling**          | Tailwind CSS                                | Utility-first, responsive design        |
 | **Components**       | shadcn/ui + Radix UI                       | Accessible, customizable components     |
-| **Development**      | ESLint + TypeScript                         | Code quality and type safety            |
+| **Development**      | ESLint + TypeScript + Vitest               | Code quality and type safety            |
 
-> **Why this stack?** Next.js provides excellent developer experience with App Router, Supabase offers a complete backend solution, Prisma ensures type-safe database operations, and Blitz.js provides a full-stack development experience with built-in conventions and code generation.
+> **Why this stack?** Next.js provides excellent developer experience with App Router, Supabase offers a complete backend solution, Prisma ensures type-safe database operations, and React Query provides powerful server state management with caching and optimistic updates.
 
 ## Full-Stack Architecture
 
-### Blitz.js Integration
+### React Query Integration
 
-Blitz.js extends Next.js with full-stack capabilities:
+React Query provides powerful server state management:
 
-- **Server-Side Functions** - Write database queries and business logic in the same file as your components
-- **Code Generation** - Automatic generation of CRUD operations, forms, and pages
-- **Type Safety** - End-to-end type safety from database to UI
-- **Convention over Configuration** - Standardized project structure and patterns
+- **Automatic Caching** - Intelligent caching with background updates
+- **Optimistic Updates** - Immediate UI feedback with rollback on error
+- **Background Refetching** - Keep data fresh automatically
+- **Error Handling** - Built-in error states and retry logic
+- **DevTools** - Excellent debugging experience
 
 ### Database-First Development
 
@@ -65,18 +67,33 @@ Our Prisma schema works with Supabase Auth by:
 - **No User Model** - We don't create a separate User model in Prisma
 - **Foreign Key References** - Projects and Tasks reference `auth.users.id` from Supabase
 - **Session-Based Queries** - All queries filter by the authenticated user's ID
+- **Project Members** - Projects can have multiple members with different roles
 
 ```prisma
 model Project {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   name        String
   description String?
-  userId      String   // References auth.users.id from Supabase
+  userId      String          // References auth.users.id from Supabase
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  members     ProjectMember[]
   tasks       Task[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
   @@map("projects")
+}
+
+model ProjectMember {
+  id        String     @id @default(cuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
 }
 
 model Task {
@@ -86,12 +103,32 @@ model Task {
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
   projectId   String
-  project     Project    @relation(fields: [projectId], references: [id])
   assigneeId  String?    // References auth.users.id from Supabase
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  project     Project    @relation(fields: [projectId], references: [id])
 
   @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
 }
 ```
 
@@ -156,12 +193,12 @@ if (
 }
 ```
 
-### Blitz.js Compatibility
+### React Query Compatibility
 
-The middleware works seamlessly with Blitz.js:
+The middleware works seamlessly with React Query:
 
-- **Session Integration** - Blitz.js uses the same session data
-- **Route Protection** - Protects Blitz.js pages and mutations
+- **Session Integration** - React Query uses the same session data
+- **Route Protection** - Protects React Query pages and mutations
 - **Type Safety** - Maintains TypeScript safety throughout
 - **Performance** - Minimal overhead with efficient session checks
 
@@ -197,22 +234,30 @@ sprintdeck/
 │   ├── auth-button.tsx         # Authentication components
 │   ├── hero.tsx               # Landing page components
 │   └── tutorial/               # Tutorial components
+├── hooks/
+│   ├── use-projects.ts         # React Query hooks for projects
+│   ├── use-tasks.ts           # React Query hooks for tasks
+│   ├── use-project-mutations.ts # Mutation hooks
+│   └── use-task-mutations.ts   # Task mutation hooks
+├── services/
+│   ├── projects.ts             # API service functions
+│   ├── tasks.ts               # Task API services
+│   └── users.ts               # User API services
 ├── lib/
 │   ├── supabase/              # Supabase client configuration
 │   │   ├── client.ts          # Browser client
 │   │   ├── server.ts          # Server client
 │   │   └── middleware.ts      # Auth middleware
-│   ├── auth.ts                # Auth utility for Blitz.js
+│   ├── auth-server.ts         # Server-side auth utilities
 │   ├── db.ts                  # Prisma database client
 │   └── utils.ts               # Utility functions
+├── contexts/
+│   ├── project-filter-context.tsx # Filter state management
+│   └── task-filter-context.tsx    # Task filter state
 ├── prisma/                    # Database configuration
 │   ├── schema.prisma          # Prisma schema
 │   ├── migrations/            # Database migrations
 │   └── seed.ts               # Database seeding
-├── app/                       # Blitz.js app directory
-│   ├── projects/              # Project-related pages and mutations
-│   ├── tasks/                 # Task-related pages and mutations
-│   └── users/                 # User-related pages and mutations
 ├── middleware.ts              # Next.js middleware
 └── package.json
 ```
@@ -226,102 +271,73 @@ sprintdeck/
 * **Theme Support** – Dark/light mode with system preference detection
 * **Responsive Design** – Mobile-first approach with modern styling
 * **Database-First Development** – Prisma schema-driven development with type safety
-* **Full-Stack Functions** – Server-side functions with Blitz.js for seamless data flow
-
-## Database Schema
-
-### Prisma Schema Structure
-
-```prisma
-// prisma/schema.prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-model Project {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  userId      String   // References auth.users.id from Supabase
-  tasks       Task[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("projects")
-}
-
-model Task {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  status      TaskStatus @default(TODO)
-  priority    Priority   @default(MEDIUM)
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id])
-  assigneeId  String?    // References auth.users.id from Supabase
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  @@map("tasks")
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  REVIEW
-  DONE
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-```
+* **React Query Integration** – Powerful server state management with caching and optimistic updates
+* **Filter and Sort** – Advanced filtering and sorting with Context + Reducer pattern
+* **Swimlane View** – Kanban-style task management with drag and drop
 
 ## API Design
 
-### Blitz.js Mutations and Queries
+### REST API Endpoints
 
-Instead of traditional REST APIs, Blitz.js uses mutations and queries:
+The application uses traditional REST APIs with React Query for state management:
 
 ```typescript
-// app/projects/queries/getProjects.ts
-import { db } from "lib/db"
-import { auth } from "lib/auth"
-
-export default async function getProjects() {
-  const session = await auth()
-  if (!session) throw new Error("Not authenticated")
+// services/projects.ts
+export const projectServices = {
+  async fetchProjects(): Promise<ProjectWithTasks[]> {
+    const response = await fetch('/api/projects', {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch projects');
+    }
+    return response.json();
+  },
   
-  return db.project.findMany({
-    where: { userId: session.user.id },
-    include: { tasks: true }
-  })
-}
+  async createProject(data: ProjectFormData): Promise<ProjectWithTasks> {
+    const response = await fetch('/api/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create project');
+    }
+    return response.json();
+  },
+};
 ```
 
-```typescript
-// app/projects/mutations/createProject.ts
-import { db } from "lib/db"
-import { auth } from "lib/auth"
+### React Query Hooks
 
-export default async function createProject(input: CreateProjectInput) {
-  const session = await auth()
-  if (!session) throw new Error("Not authenticated")
-  
-  return db.project.create({
-    data: {
-      ...input,
-      userId: session.user.id
-    }
-  })
+```typescript
+// hooks/use-projects.ts
+import { useQuery } from "@tanstack/react-query";
+import { projectServices } from "@/services";
+
+export function useProjects() {
+  return useQuery({
+    queryKey: ["projects"],
+    queryFn: projectServices.fetchProjects,
+  });
+}
+
+// hooks/use-project-mutations.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: projectServices.createProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      router.push("/protected/projects");
+    },
+  });
 }
 ```
 
@@ -341,14 +357,14 @@ All database operations go through Prisma:
 1. **Define Schema** - Update `prisma/schema.prisma`
 2. **Generate Types** - Run `npx prisma generate`
 3. **Create Migration** - Run `npx prisma migrate dev`
-4. **Write Queries** - Create type-safe database operations
+4. **Write Services** - Create API service functions
 5. **Build UI** - Use generated types in components
 
-### Blitz.js Conventions
+### React Query Conventions
 
-- **Queries** - `app/[resource]/queries/`
-- **Mutations** - `app/[resource]/mutations/`
-- **Pages** - `app/[resource]/pages/`
-- **Components** - `app/[resource]/components/`
+- **Queries** - `hooks/use-[resource].ts`
+- **Mutations** - `hooks/use-[resource]-mutations.ts`
+- **Services** - `services/[resource].ts`
+- **Components** - `components/[resource]-[component].tsx`
 
 This creates a cohesive full-stack development experience with strong conventions and type safety throughout the entire application stack. 
