@@ -1,10 +1,11 @@
 import type { ProjectWithTasks, TaskWithDetails, ProjectFilterState, TaskFilterState } from "@/types";
 
   // Project filtering and sorting
-  export function filterAndSortProjects(
-    projects: ProjectWithTasks[],
-    filters: ProjectFilterState
-  ): ProjectWithTasks[] {
+export function filterAndSortProjects(
+  projects: ProjectWithTasks[],
+  filters: ProjectFilterState,
+  currentUserId?: string
+): ProjectWithTasks[] {
     const filtered = projects.filter((project) => {
     // Search filter
     if (filters.search) {
@@ -17,7 +18,13 @@ import type { ProjectWithTasks, TaskWithDetails, ProjectFilterState, TaskFilterS
 
     // Owner filter
     if (filters.owner !== "ALL") {
-      if (project.userId !== filters.owner) return false;
+      if (filters.owner === "current") {
+        // Filter by current user
+        if (!currentUserId || project.userId !== currentUserId) return false;
+      } else {
+        // Filter by specific user ID
+        if (project.userId !== filters.owner) return false;
+      }
     }
 
     return true;

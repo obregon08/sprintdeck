@@ -11,11 +11,13 @@ import { ProjectsSkeleton } from "@/components/projects-skeleton";
 import { ProjectFilter } from "@/components/project-filter";
 import { useProjectFilter } from "@/contexts/project-filter-context";
 import { filterAndSortProjects } from "@/lib/utils/filter-utils";
+import { useSession } from "@/lib/auth-client";
 
 export function ProjectsList() {
   const router = useRouter();
   const deleteProjectMutation = useDeleteProject();
   const { state: filterState } = useProjectFilter();
+  const session = useSession();
 
   const {
     data: projects,
@@ -44,7 +46,7 @@ export function ProjectsList() {
   }
 
   // Apply filters and sorting
-  const filteredProjects = projects ? filterAndSortProjects(projects, filterState) : [];
+  const filteredProjects = projects ? filterAndSortProjects(projects, filterState, session?.user?.id) : [];
 
   if (!projects || projects.length === 0) {
     return (

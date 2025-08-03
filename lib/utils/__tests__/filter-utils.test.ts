@@ -64,6 +64,20 @@ describe('filter-utils', () => {
       expect(result[1].userId).toBe('user1');
     });
 
+    it('filters projects by current user', () => {
+      const filters: ProjectFilterState = {
+        search: '',
+        owner: 'current',
+        sortBy: 'name',
+        sortOrder: 'asc'
+      };
+
+      const result = filterAndSortProjects(mockProjects, filters, 'user1');
+      expect(result).toHaveLength(2);
+      expect(result[0].userId).toBe('user1');
+      expect(result[1].userId).toBe('user1');
+    });
+
     it('sorts projects by name in ascending order', () => {
       const filters: ProjectFilterState = {
         search: '',

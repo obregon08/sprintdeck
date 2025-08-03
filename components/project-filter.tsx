@@ -121,7 +121,7 @@ export function ProjectFilter() {
           )}
           {state.owner !== "ALL" && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary text-xs rounded">
-              Owner: {state.owner}
+              Owner: {state.owner === "current" ? "My Projects" : state.owner}
               <button
                 onClick={() => dispatch({ type: "SET_OWNER", payload: "ALL" })}
                 className="ml-1 hover:bg-primary/20 rounded"
