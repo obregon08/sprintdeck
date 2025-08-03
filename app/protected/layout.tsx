@@ -40,12 +40,12 @@ export default function ProtectedLayout({
             <p>
               Made with ❤️ by{" "}
               <a
-                href="https://georgeobregon.com"
+                href="https://www.linkedin.com/in/jorge-obregon-developer/"
                 target="_blank"
                 className="font-bold hover:underline"
                 rel="noreferrer"
               >
-                GeorgeObregon.com
+                Jorge Obregon
               </a>
             </p>
             <ThemeSwitcher />
