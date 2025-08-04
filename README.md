@@ -2,6 +2,10 @@
 
 A modern project management application built with Next.js, TypeScript, and Tailwind CSS.
 
+## Product Demo
+
+https://www.loom.com/share/b24ee783691c4b898fffdfee628dbaf9?sid=1328c03a-dbb6-49fd-a805-71ba22fa4beb
+
 ## Features
 
 - **Project Management**: Create, edit, and organize projects
