@@ -12,6 +12,16 @@ vi.mock('next/navigation', () => ({
   }),
 }))
 
+// Mock console.error to suppress error logging in tests
+const originalConsoleError = console.error
+beforeEach(() => {
+  console.error = vi.fn()
+})
+
+afterEach(() => {
+  console.error = originalConsoleError
+})
+
 // Create a wrapper component for testing hooks
 const createWrapper = () => {
   const queryClient = new QueryClient({

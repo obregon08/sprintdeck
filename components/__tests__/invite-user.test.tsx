@@ -3,6 +3,16 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { InviteUser } from "../invite-user";
 
+// Mock console.error to suppress error logging in tests
+const originalConsoleError = console.error
+beforeEach(() => {
+  console.error = vi.fn()
+})
+
+afterEach(() => {
+  console.error = originalConsoleError
+})
+
 // Mock the useInviteUser hook
 const mockMutateAsync = vi.fn();
 const mockUseInviteUser = vi.fn(() => ({

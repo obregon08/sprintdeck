@@ -83,6 +83,9 @@ export function ProjectMembersModal({ projectId }: ProjectMembersModalProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Project Members</DialogTitle>
+          <DialogDescription>
+            View and manage project members. You can remove members if you have the appropriate permissions.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           {isLoading && (
