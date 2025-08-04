@@ -109,6 +109,8 @@ This project is configured with Chromatic for visual testing and component docum
    ```bash
    npm run chromatic
    ```
+   
+   > **Note**: The Chromatic command is configured with `--exit-zero-on-changes` to ensure CI/CD builds don't fail when visual changes are detected. Changes will still be reported in the Chromatic dashboard for review.
 
 ### GitHub Actions
 
@@ -121,6 +123,16 @@ The project includes automated Chromatic publishing via GitHub Actions. To enabl
    - Set the value to your Chromatic project token
 
 2. Push to main or create a pull request to trigger the workflow
+
+### CI/CD Configuration
+
+The project is configured to ensure Chromatic builds always succeed in CI/CD:
+
+- **Package.json script**: Uses `--exit-zero-on-changes` flag
+- **GitHub Actions**: Includes `exitZeroOnChanges: true` configuration
+- **chromatic.json**: Has `"exitZeroOnChanges": true` setting
+
+This prevents CI/CD failures while still providing visual regression testing feedback.
 
 ### Benefits
 

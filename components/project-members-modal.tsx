@@ -50,7 +50,6 @@ export function ProjectMembersModal({ projectId }: ProjectMembersModalProps) {
   const { data: myRole } = useMyProjectRole(projectId);
   const removeMember = useRemoveProjectMember();
   
-  // State for confirmation dialog
   const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 

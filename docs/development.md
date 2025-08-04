@@ -2,11 +2,7 @@
 
 ## Getting Started
 
-### Prerequisites
-
-* Node.js >= 18
-* npm, yarn, or pnpm
-* Supabase account (free tier available)
+See the [Setup Guide](setup.md) for installation and initial configuration instructions.
 
 ### Development Scripts
 
@@ -15,8 +11,6 @@ npm run dev          # Start development server
 npm run build        # Build for production
 npm run start        # Start production server
 npm run lint         # Run ESLint
-npm run test         # Run tests with Vitest
-npm run test:watch   # Run tests in watch mode
 ```
 
 ## Code Quality
@@ -415,6 +409,14 @@ describe('ProjectForm', () => {
 - [ ] Filter and sort functionality
 - [ ] Swimlane drag and drop
 
+### Visual Testing
+
+The project uses Chromatic for visual regression testing. See the [Storybook documentation](storybook.md#chromatic-integration) for detailed setup and configuration instructions.
+
+```bash
+npm run chromatic  # Publish to Chromatic for visual testing
+```
+
 ## Debugging
 
 ### Common Issues
@@ -464,18 +466,4 @@ describe('ProjectForm', () => {
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-### Pull Request Guidelines
-
-- Include a clear description of changes
-- Add screenshots for UI changes
-- Update documentation if needed
-- Ensure all tests pass
-- Follow the existing code style
-- Update database schema if needed
-- Add migrations for database changes 
+See the [main README](../README.md#contributing) for contribution guidelines. 

@@ -1,5 +1,11 @@
 import type { TaskStatus, Priority } from "@prisma/client"
 
+export interface Assignee {
+  id: string;
+  email: string;
+  name?: string;
+}
+
 export interface TaskWithDetails {
   id: string;
   title: string;
@@ -48,4 +54,13 @@ export interface TaskFormProps {
     priority: Priority;
     assigneeId: string | null;
   };
+}
+
+export interface DraggableTaskCardProps {
+  task: TaskWithDetails;
+  projectId: string;
+  onDelete: (taskId: string) => void;
+  isUpdating: boolean;
+  userRole?: { role: string };
+  assignees?: Assignee[];
 } 

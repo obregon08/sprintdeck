@@ -93,40 +93,11 @@ npm run build-storybook
 
 ### Chromatic (Visual Testing)
 
-Chromatic provides visual testing and component documentation hosting.
+Chromatic provides visual testing and component documentation hosting. See the [Storybook documentation](docs/storybook.md#chromatic-integration) for detailed setup and configuration instructions.
 
-#### Setup
-
-1. Get your Chromatic project token:
-   - Sign up at [chromatic.com](https://www.chromatic.com/start)
-   - Create a new project or connect to an existing one
-   - Copy your project token from the project settings
-
-2. Configure your project token:
-   ```bash
-   # Option 1: Set environment variable
-   export CHROMATIC_PROJECT_TOKEN=your_token_here
-   
-   # Option 2: Update chromatic.json
-   # Replace CHROMATIC_PROJECT_TOKEN with your actual token
-   ```
-
-3. Publish to Chromatic:
-   ```bash
-   npm run chromatic
-   ```
-
-#### Automated Publishing
-
-The project includes GitHub Actions for automated Chromatic publishing. To enable:
-
-1. Add your Chromatic project token as a GitHub secret:
-   - Go to your repository settings
-   - Navigate to Secrets and variables > Actions
-   - Add a new secret named `CHROMATIC_PROJECT_TOKEN`
-   - Set the value to your Chromatic project token
-
-2. Push to main or create a pull request to trigger the workflow
+```bash
+npm run chromatic
+```
 
 ## Testing
 
@@ -136,7 +107,7 @@ The project includes GitHub Actions for automated Chromatic publishing. To enabl
 npm run test
 ```
 
-### E2E Tests
+### E2E Tests (Coming soon)
 
 ```bash
 npm run test:e2e
@@ -147,6 +118,8 @@ npm run test:e2e
 ```bash
 npm run chromatic
 ```
+
+See the [Storybook documentation](docs/storybook.md#chromatic-integration) for detailed setup and configuration instructions.
 
 ## Project Structure
 
@@ -166,13 +139,13 @@ sprintdeck/
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite
-6. Submit a pull request
+This is a private repository. To contribute:
 
-## License
+1. Create a new branch from `main` for your changes.
+2. Make your changes and commit them to your branch.
+3. Add or update tests as needed.
+4. Run the test suite to ensure all tests pass.
+5. Open a pull request targeting the `main` branch.
+6. Your changes will be reviewed before being merged.
 
-This project is licensed under the MIT License.
+If you have questions about the contribution process, please reach out to the project maintainers.

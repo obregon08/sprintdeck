@@ -45,7 +45,8 @@ export function ProjectsList() {
     );
   }
 
-  // Apply filters and sorting
+  // TODO: Apply filters and sorting in the frontend as required by the project instructions.
+  // However, pagination, sorting and filtering should be done in the backend.
   const filteredProjects = projects ? filterAndSortProjects(projects, filterState, session?.user?.id) : [];
 
   if (!projects || projects.length === 0) {

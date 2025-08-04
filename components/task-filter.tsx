@@ -92,7 +92,6 @@ export function TaskFilter({ projectId }: { projectId: string }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -103,7 +102,6 @@ export function TaskFilter({ projectId }: { projectId: string }) {
           />
         </div>
 
-        {/* Status Filter */}
         <Select value={state.status} onValueChange={handleStatusChange}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by status" />
@@ -117,7 +115,6 @@ export function TaskFilter({ projectId }: { projectId: string }) {
           </SelectContent>
         </Select>
 
-        {/* Priority Filter */}
         <Select value={state.priority} onValueChange={handlePriorityChange}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by priority" />
@@ -131,7 +128,6 @@ export function TaskFilter({ projectId }: { projectId: string }) {
           </SelectContent>
         </Select>
 
-        {/* Assignee Filter */}
         <Select value={state.assignee} onValueChange={handleAssigneeChange}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by assignee" />
@@ -148,7 +144,6 @@ export function TaskFilter({ projectId }: { projectId: string }) {
         </Select>
       </div>
 
-      {/* Sort Options */}
       <div className="flex gap-2">
         <Select value={state.sortBy} onValueChange={handleSortByChange}>
           <SelectTrigger className="flex-1">
@@ -177,7 +172,6 @@ export function TaskFilter({ projectId }: { projectId: string }) {
         </Button>
       </div>
 
-      {/* Active Filters Display */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 pt-2">
           {state.search && (

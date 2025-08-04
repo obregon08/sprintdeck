@@ -53,7 +53,6 @@ export function ProjectFilter() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -64,7 +63,6 @@ export function ProjectFilter() {
           />
         </div>
 
-        {/* Owner Filter */}
         <Select value={state.owner} onValueChange={handleOwnerChange}>
           <SelectTrigger>
             <SelectValue placeholder="Filter by owner" />
@@ -72,11 +70,9 @@ export function ProjectFilter() {
           <SelectContent>
             <SelectItem value="ALL">All Owners</SelectItem>
             <SelectItem value="current">My Projects</SelectItem>
-            {/* In a real app, you'd populate this with actual user IDs */}
           </SelectContent>
         </Select>
 
-        {/* Sort Options */}
         <div className="flex gap-2">
           <Select value={state.sortBy} onValueChange={handleSortByChange}>
             <SelectTrigger className="flex-1">
@@ -105,7 +101,6 @@ export function ProjectFilter() {
         </div>
       </div>
 
-      {/* Active Filters Display */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 pt-2">
           {state.search && (
