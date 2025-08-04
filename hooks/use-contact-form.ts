@@ -18,7 +18,7 @@ export function useContactForm() {
     },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async () => {
     // TODO: Simulate form submission delay. In a real app, you'd send the data to the backend.
     await new Promise(resolve => setTimeout(resolve, 1000));
     setShowSuccess(true);
