@@ -3,6 +3,14 @@ import { beforeAll, afterEach, afterAll, vi } from 'vitest'
 import React from 'react'
 import { server } from './mocks/server'
 
+// Polyfill for jsdom limitations with Radix UI components
+if (typeof Element !== 'undefined') {
+  Element.prototype.hasPointerCapture = vi.fn(() => false)
+  Element.prototype.setPointerCapture = vi.fn()
+  Element.prototype.releasePointerCapture = vi.fn()
+  Element.prototype.scrollIntoView = vi.fn()
+}
+
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
   useRouter() {

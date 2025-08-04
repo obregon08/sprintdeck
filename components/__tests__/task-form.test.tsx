@@ -155,8 +155,12 @@ describe('TaskForm', () => {
       // Check that assignee options are present
       const unassignedElements = screen.getAllByText('Unassigned')
       expect(unassignedElements.length).toBeGreaterThan(0)
-      expect(screen.getByText('Alice Johnson')).toBeInTheDocument()
-      expect(screen.getByText('Bob Smith')).toBeInTheDocument()
+      
+      const aliceElements = screen.getAllByText('Alice Johnson')
+      expect(aliceElements.length).toBeGreaterThan(0)
+      
+      const bobElements = screen.getAllByText('Bob Smith')
+      expect(bobElements.length).toBeGreaterThan(0)
     }
   })
 }) 
