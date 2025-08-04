@@ -1,0 +1,12 @@
+{
+  "projectToken": "chpt_21909a25d8fc10c",
+  "storybookBuildDir": "storybook-static",
+  "exitZeroOnChanges": true,
+  "onlyChanged": true,
+  "autoAcceptChanges": false,
+  "untraced": [
+    "node_modules/**",
+    ".git/**",
+    "storybook-static/**"
+  ]
+} 
