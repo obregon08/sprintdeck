@@ -1,16 +1,16 @@
 # Deployment
 
-## Deploy to Vercel
+This document covers deployment to various platforms. For detailed Vercel-specific configuration and troubleshooting, see [Vercel Deployment Guide](./vercel-deployment.md).
 
-The easiest way to deploy is using the Vercel integration:
+## Deploy to Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase)
+The easiest way to deploy is using Vercel:
 
-This will:
-- Clone the repository to your GitHub
-- Set up the Supabase integration
-- Automatically configure environment variables
-- Deploy to Vercel
+1. **Connect Repository**: Link your GitHub repository to Vercel
+2. **Set Environment Variables**: Configure required environment variables in Vercel dashboard
+3. **Deploy**: Vercel will automatically use the build configuration from `package.json` and `vercel.json`
+
+For detailed Vercel setup including Prisma configuration, see the [Vercel Deployment Guide](./vercel-deployment.md).
 
 ## Manual Deployment
 
@@ -25,9 +25,7 @@ npm run build
 Choose from these popular platforms:
 
 #### Vercel
-- Connect your GitHub repository
-- Set environment variables in the dashboard
-- Automatic deployments on push
+See the [Vercel Deployment Guide](./vercel-deployment.md) for detailed setup instructions including Prisma configuration.
 
 #### Netlify
 - Connect your GitHub repository
@@ -64,6 +62,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 |----------|-------------|----------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | Yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon/public key | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key | Yes |
+| `DATABASE_URL` | Your Supabase PostgreSQL connection string | Yes |
+| `DIRECT_URL` | Your Supabase direct PostgreSQL connection string | Yes |
 | `VERCEL_URL` | Vercel deployment URL (auto-set) | No |
 
 ### Supabase Configuration

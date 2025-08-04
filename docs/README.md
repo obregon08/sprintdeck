@@ -12,8 +12,7 @@ This directory contains comprehensive documentation for the SprintDeck project m
 
 ### API Documentation
 
-- **[API Examples](./api-examples.md)** - REST API endpoints and usage examples
-- **[Tasks API](./tasks-api.md)** - Task management API documentation
+- **[API Documentation](./api-examples.md)** - Complete REST API reference with examples for all endpoints
 
 ### Feature Documentation
 
@@ -125,6 +124,7 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 DATABASE_URL=your_supabase_database_url
+DIRECT_URL=your_supabase_direct_database_url
 ```
 
 ## Support

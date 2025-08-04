@@ -25,7 +25,7 @@ Storybook will be available at `http://localhost:6006` when running in developme
 
 - `.storybook/main.ts` - Main Storybook configuration
 - `.storybook/preview.ts` - Global decorators and parameters
-- `.storybook/vitest.setup.ts` - Vitest setup for testing
+- `.storybook/vitest.setup.ts` - Vitest setup for testing (currently not in use due to commented-out browser tests)
 
 ### Story Files
 
@@ -143,10 +143,12 @@ This prevents CI/CD failures while still providing visual regression testing fee
 
 ## Testing with Vitest
 
-Stories can be tested using Vitest. The `@storybook/addon-vitest` addon is configured to run tests in Storybook.
+Stories can be tested using Vitest. The `@storybook/addon-vitest` addon is installed and configured, but the browser testing feature is currently commented out in `vitest.config.ts` to avoid MSW version conflicts.
+
+**Note**: The Storybook browser testing project is currently disabled in the Vitest configuration. To enable it, uncomment the projects section in `vitest.config.ts`.
 
 ```bash
-# Run tests for Storybook stories
+# Run tests for Storybook stories (when enabled)
 npx vitest --project=storybook
 ```
 

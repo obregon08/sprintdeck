@@ -16,11 +16,11 @@ export function useSession(): Session | null {
     getData()
   }, [supabase.auth])
 
-  return {
+  return session?.user?.id ? {
     user: {
-      id: session?.user?.id,
+      id: session?.user.id,
       email: session?.user?.email,
       name: session?.user?.name || session?.user?.email || "",
     }
-  } as Session | null
+  } as Session : null
 } 

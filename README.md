@@ -107,11 +107,9 @@ npm run chromatic
 npm run test
 ```
 
-### E2E Tests (Coming soon)
+### E2E Tests
 
-```bash
-npm run test:e2e
-```
+E2E tests with Playwright are planned but not yet implemented. See the [roadmap](docs/roadmap.md) for more details.
 
 ### Visual Testing
 

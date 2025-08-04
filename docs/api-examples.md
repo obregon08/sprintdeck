@@ -1,14 +1,19 @@
-# Projects API Documentation
+# API Documentation
 
-This document provides examples of how to use the Projects API endpoints for CRUD operations.
+This document provides comprehensive examples of how to use all API endpoints in the SprintDeck application.
 
-## Base URL
-All API endpoints are prefixed with `/api/projects`
+## Base URLs
+- Projects: `/api/projects`
+- Tasks: `/api/projects/{projectId}/tasks`
+- Users: `/api/users`
+- Health: `/api/health`
 
 ## Authentication
 All endpoints require authentication. Include your session cookie in requests.
 
-## Endpoints
+## Projects API
+
+### Endpoints
 
 ### 1. List Projects
 **GET** `/api/projects`
@@ -259,4 +264,304 @@ const createProjectMutation = useMutation({
 - Project names are required and cannot be empty
 - Descriptions are optional
 - All timestamps are in ISO 8601 format
-- Project members have roles: OWNER, ADMIN, MEMBER 
+- Project members have roles: OWNER, ADMIN, MEMBER
+
+## Project Members API
+
+### Get Project Members
+**GET** `/api/projects/{id}/members`
+
+Returns all members of a specific project.
+
+**Response:**
+```json
+[
+  {
+    "id": "user123",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "role": "MEMBER"
+  }
+]
+```
+
+### Add Project Member
+**POST** `/api/projects/{id}/members`
+
+Adds a new member to a project. Requires OWNER or ADMIN role.
+
+**Request Body:**
+```json
+{
+  "userId": "user456",
+  "role": "MEMBER"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "User added to project successfully"
+}
+```
+
+### Remove Project Member
+**DELETE** `/api/projects/{id}/members`
+
+Removes a member from a project. Requires OWNER or ADMIN role.
+
+**Request Body:**
+```json
+{
+  "userId": "user456"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "User removed from project successfully"
+}
+```
+
+## Project Assignees API
+
+### Get Project Assignees
+**GET** `/api/projects/{id}/assignees`
+
+Returns all users who can be assigned to tasks in this project (owner + members).
+
+**Response:**
+```json
+[
+  {
+    "id": "user123",
+    "email": "user@example.com",
+    "name": "John Doe"
+  }
+]
+```
+
+## Tasks API
+
+### List Tasks
+**GET** `/api/projects/{projectId}/tasks`
+
+Returns all tasks for a specific project.
+
+**Response:**
+```json
+[
+  {
+    "id": "task-123",
+    "title": "Implement user authentication",
+    "description": "Add login and registration functionality",
+    "status": "IN_PROGRESS",
+    "priority": "HIGH",
+    "projectId": "project-456",
+    "assigneeId": "user-789",
+    "createdAt": "2025-01-15T10:30:00Z",
+    "updatedAt": "2025-01-15T11:00:00Z"
+  }
+]
+```
+
+### Create Task
+**POST** `/api/projects/{projectId}/tasks`
+
+Creates a new task within a project.
+
+**Request Body:**
+```json
+{
+  "title": "Task title",
+  "description": "Task description (optional)",
+  "status": "TODO",
+  "priority": "MEDIUM",
+  "assigneeId": "user-id (optional)"
+}
+```
+
+**Status Values:**
+- `TODO`
+- `IN_PROGRESS`
+- `REVIEW`
+- `DONE`
+
+**Priority Values:**
+- `LOW`
+- `MEDIUM`
+- `HIGH`
+- `URGENT`
+
+**Response:**
+```json
+{
+  "id": "task-123",
+  "title": "Task title",
+  "description": "Task description",
+  "status": "TODO",
+  "priority": "MEDIUM",
+  "projectId": "project-456",
+  "assigneeId": null,
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T10:30:00Z"
+}
+```
+
+### Get Task
+**GET** `/api/projects/{projectId}/tasks/{taskId}`
+
+Returns a specific task.
+
+**Response:**
+```json
+{
+  "id": "task-123",
+  "title": "Task title",
+  "description": "Task description",
+  "status": "IN_PROGRESS",
+  "priority": "HIGH",
+  "projectId": "project-456",
+  "assigneeId": "user-789",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T11:00:00Z"
+}
+```
+
+### Update Task
+**PUT** `/api/projects/{projectId}/tasks/{taskId}`
+
+Updates an existing task.
+
+**Request Body:**
+```json
+{
+  "title": "Updated task title",
+  "description": "Updated description",
+  "status": "DONE",
+  "priority": "HIGH",
+  "assigneeId": "user-789"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "task-123",
+  "title": "Updated task title",
+  "description": "Updated description",
+  "status": "DONE",
+  "priority": "HIGH",
+  "projectId": "project-456",
+  "assigneeId": "user-789",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T12:00:00Z"
+}
+```
+
+### Update Task Status
+**PATCH** `/api/projects/{projectId}/tasks/{taskId}/status`
+
+Updates only the status of a task (used for swimlane drag and drop).
+
+**Request Body:**
+```json
+{
+  "status": "IN_PROGRESS"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "task-123",
+  "title": "Task title",
+  "description": "Task description",
+  "status": "IN_PROGRESS",
+  "priority": "HIGH",
+  "projectId": "project-456",
+  "assigneeId": "user-789",
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T12:00:00Z"
+}
+```
+
+### Delete Task
+**DELETE** `/api/projects/{projectId}/tasks/{taskId}`
+
+Deletes a task.
+
+**Response:**
+```json
+{
+  "message": "Task deleted successfully"
+}
+```
+
+## Users API
+
+### Get Users
+**GET** `/api/users`
+
+Returns all users in the system.
+
+**Response:**
+```json
+[
+  {
+    "id": "user123",
+    "email": "user@example.com",
+    "name": "John Doe"
+  }
+]
+```
+
+## Health Check API
+
+### Health Check
+**GET** `/api/health`
+
+Returns system health information including database status and performance metrics.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "uptime": 12345,
+  "environment": "production",
+  "version": "1.0.0",
+  "database": {
+    "connected": true,
+    "tables": {
+      "projects": true,
+      "tasks": true
+    },
+    "performance": {
+      "queryTime": 5,
+      "connectionPool": {
+        "active": 2,
+        "idle": 8
+      }
+    },
+    "projectCount": 150,
+    "taskCount": 890
+  },
+  "system": {
+    "memory": {
+      "used": 123456789,
+      "total": 1073741824,
+      "percentage": 11.5
+    },
+    "nodeVersion": "v18.17.0"
+  },
+  "auth": {
+    "sessionActive": true,
+    "user": {
+      "id": "user123",
+      "email": "user@example.com"
+    }
+  }
+}
+``` 
