@@ -2,9 +2,12 @@ import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
+import { getSession } from "@/lib/auth-server";
 import Link from "next/link";
 
-export function Navigation() {
+export async function Navigation() {
+  const session = await getSession();
+
   return (
     <nav className="w-full glass-effect sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -25,6 +28,15 @@ export function Navigation() {
           </div>
         </div>
         <div className="flex items-center space-x-4">
+          {session && (
+            <>
+              <Link href="/protected/projects" className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+                Projects
+              </Link>
+              <span className="text-gray-700 dark:text-gray-300"> | </span>
+            </>
+          )}
+
           {!hasEnvVars ? <EnvVarWarning /> : <AuthButton />}
           <ThemeSwitcher />
         </div>

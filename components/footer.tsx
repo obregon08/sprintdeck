@@ -38,7 +38,7 @@ export function Footer() {
         </div>
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm">
-            © 2024 SprintDeck. All rights reserved.
+            © {new Date().getFullYear()} SprintDeck. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white transition-colors">
