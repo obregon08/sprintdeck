@@ -97,7 +97,7 @@ const DraggableTaskCard = ({
             <div className="flex-1">
               <CardTitle className="text-lg">{task.title}</CardTitle>
               <CardDescription className="mt-2">
-                {task.description || "No description"}
+                {task.description}
               </CardDescription>
             </div>
             {userRole?.role && (

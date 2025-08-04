@@ -29,7 +29,7 @@ export function DemoSection() {
                     Screenshot placeholder
                   </p>
                   <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                    Add your app screenshot here
+                    Coming soon!
                   </p>
                 </div>
               </div>
