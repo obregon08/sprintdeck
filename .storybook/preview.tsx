@@ -1,5 +1,6 @@
 import type { Preview } from '@storybook/nextjs-vite'
 import '../app/globals.css'
+import React from 'react'
 
 const preview: Preview = {
   parameters: {
@@ -30,7 +31,24 @@ const preview: Preview = {
         },
       ],
     },
+    
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: '/',
+        query: {},
+      },
+    },
   },
+  decorators: [
+    (Story) => {
+      return (
+        <div style={{ padding: '1rem' }}>
+          <Story />
+        </div>
+      );
+    },
+  ],
 };
 
 export default preview;

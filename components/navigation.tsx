@@ -1,12 +1,14 @@
+'use client';
+
+import { useSession } from "@/lib/auth-client";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { AuthButton } from "@/components/auth-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/lib/utils";
-import { getSession } from "@/lib/auth-server";
 import Link from "next/link";
 
-export async function Navigation() {
-  const session = await getSession();
+export function Navigation() {
+  const session = useSession();
 
   return (
     <nav className="w-full glass-effect sticky top-0 z-50">

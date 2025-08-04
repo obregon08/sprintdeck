@@ -17,12 +17,15 @@ const config: StorybookConfig = {
     "options": {}
   },
   "viteFinal": async (config) => {
-    if (config.resolve) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        "@": "/Users/j/w/sprintdeck",
+    // Add module mocking
+    if (config.define) {
+      config.define = {
+        ...config.define,
+        'process.env.NEXT_PUBLIC_SUPABASE_URL': JSON.stringify('https://mock.supabase.co'),
+        'process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY': JSON.stringify('mock-key'),
       };
     }
+    
     return config;
   },
 };
