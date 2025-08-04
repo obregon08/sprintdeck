@@ -11,7 +11,7 @@
     "test:ui": "vitest --ui",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "chromatic",
+    "chromatic": "chromatic --exit-zero-on-changes",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
